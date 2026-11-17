@@ -11,5 +11,5 @@ find $SP/stage \( -name "*.py" -o -name "*.sh" \) -exec sed -i 's/\r$//' {} +
 echo $H > $SP/stage/COMMIT
 (cd $SP/stage && tar czf /path/to/evalgame/bundle_v2.tgz COMMIT src pod wsl data)
 rm -rf $SP/chk; mkdir $SP/chk; tar xzf bundle_v2.tgz -C $SP/chk
-CR=$(grep -rl $'\r' $SP/chk --include=*.py --include=*.sh | wc -l)
+CR=$(python -c "import glob,sys;print(sum(b'\r' in open(f,'rb').read() for f in glob.glob(sys.argv[1]+'/**/*',recursive=True) if f.endswith(('.py','.sh'))))" $SP/chk)
 echo "bundle commit=$(cat $SP/chk/COMMIT) files_with_CR=$CR size=$(stat -c %s bundle_v2.tgz) sha256=$(sha256sum bundle_v2.tgz | cut -c1-16)"
