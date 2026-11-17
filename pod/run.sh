@@ -32,10 +32,11 @@ gen() { gpu_wait; timeout $(( DEADLINE - $(date +%s) )) python3 wsl/gen.py "$@";
 py_gpu() { local log=$1; shift; gpu_wait; timeout $(( DEADLINE - $(date +%s) )) python3 "$@" > results/v2/$log.log 2>&1; local rc=$?; tail -2 results/v2/$log.log; return $rc; }
 dpo() { local name=$1; shift; gpu_wait; python3 pod/dpo_train.py "$@" > results/v2/$name.log 2>&1; grep "\[dpo\]" results/v2/$name.log > results/v2/$name.txt; tail -3 results/v2/$name.txt; }
 finish() { prog package
-  tar czf results_v2.tar.gz results/v2 data/v2/*.json data/v2/pairs_r*.jsonl ckpt/${TAG}_r1 $( [ -d ckpt/${TAG}_r2 ] && echo ckpt/${TAG}_r2 ) \
+  tar czf results_v2.tar.gz results/v2 data/v2/*.json data/v2/pairs_r*.jsonl ckpt/*.log.jsonl ckpt/${TAG}_r1 $( [ -d ckpt/${TAG}_r2 ] && echo ckpt/${TAG}_r2 ) \
       $(ls ckpt/${TAG}_r1_snaps/step_0000.npz 2>/dev/null) $(ls ckpt/${TAG}_r*_snaps/*.npz 2>/dev/null | tail -1) 2>/dev/null
+  tar cf snaps_v2.tar ckpt/${TAG}_r*_snaps ckpt/*.log.jsonl 2>/dev/null  # every snapshot: activations + adapters
   tar czf raw_v2.tar.gz data/v2/screen_out.jsonl data/v2/eval_out.jsonl data/v2/eval_push_*.jsonl data/v2/r2_out.jsonl data/v2/panel.jsonl 2>/dev/null
-  ls -la results_v2.tar.gz raw_v2.tar.gz; prog DONE; touch $ST/ALL_DONE; exit 0; }
+  ls -la results_v2.tar.gz raw_v2.tar.gz snaps_v2.tar; prog DONE; touch $ST/ALL_DONE; exit 0; }
 
 # watchdog: at the deadline kill GPU work so packaging still runs
 ( while [ $(date +%s) -lt $DEADLINE ]; do sleep 30; done; touch $ST/STOP; pkill -f wsl/gen.py; pkill -f dpo_train.py; pkill -f capture.py ) &

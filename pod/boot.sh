@@ -27,14 +27,40 @@ from huggingface_hub import snapshot_download
 for m in ["Qwen/Qwen3-4B", "Qwen/Qwen2.5-7B-Instruct-AWQ"]:
     snapshot_download(m, local_dir=f"/workspace/models/{m.split('/')[1]}")
 EOF
-log "env $(python -c 'import torch,vllm;print(torch.__version__, vllm.__version__, torch.cuda.get_device_name(0))')"
+log "env $(python -c 'import torch,vllm,transformers,peft;print(torch.__version__, vllm.__version__, transformers.__version__, peft.__version__, torch.cuda.get_device_name(0))')"
+pip freeze > /workspace/pip_freeze.txt 2>/dev/null || uv pip freeze > /workspace/pip_freeze.txt; nvidia-smi > /workspace/nvidia_smi.txt
+# flash attention check: run SDPA with ONLY the flash backend allowed, bf16 causal (the DPO path)
+log "flash $(python - <<'PYEOF'
+import torch
+from torch.nn.attention import sdpa_kernel, SDPBackend
+q = torch.randn(1, 32, 2048, 128, device="cuda", dtype=torch.bfloat16)
+try:
+    with sdpa_kernel(SDPBackend.FLASH_ATTENTION):
+        torch.nn.functional.scaled_dot_product_attention(q, q, q, is_causal=True)
+    print("sdpa_flash_ok")
+except Exception as e:
+    print("sdpa_flash_FAIL", repr(e)[:200])
+# the real DPO path: Qwen3-4B forward on one unpadded sequence with only the flash kernel allowed
+from transformers import AutoModelForCausalLM
+m = AutoModelForCausalLM.from_pretrained("/workspace/models/Qwen3-4B", dtype=torch.bfloat16, device_map={"": 0}, attn_implementation="sdpa")
+ids = torch.randint(0, 150000, (1, 1024), device="cuda")
+try:
+    with torch.no_grad(), sdpa_kernel(SDPBackend.FLASH_ATTENTION):
+        m.model(input_ids=ids)
+    print("qwen_dpo_path_flash_ok")
+except Exception as e:
+    print("qwen_dpo_path_flash_FAIL(falls back to mem-efficient kernel)", repr(e)[:160])
+PYEOF
+)"
+log "selfstop runpodctl=$(command -v runpodctl || echo MISSING) api_key=$([ -n "${RUNPOD_API_KEY:-}" ] && echo set || echo MISSING) pod=${RUNPOD_POD_ID:-MISSING}"
 
 # ---- smoke gate ----
 if [ ! -f /workspace/SMOKE_OK ]; then
   rm -rf /workspace/smoke && mkdir -p /workspace/smoke && cd /workspace/smoke && tar xzf /workspace/bundle_v2.tgz
   log "smoke start"
-  NS=2 N_WMDP=40 N_MMLU=16 DPO_LIMIT=3 N_SNAPS=3 MIN_EVAL_PAIRS=100000 PUSH_ROUNDS=1 GATE_G=-1000 BUDGET_H=0.75 R2_CUTOFF_H=0.6 TAG=v2 \
+  VLLM_LOGGING_LEVEL=INFO NS=2 N_WMDP=40 N_MMLU=16 DPO_LIMIT=3 N_SNAPS=3 MIN_EVAL_PAIRS=100000 PUSH_ROUNDS=1 GATE_G=-1000 BUDGET_H=0.75 R2_CUTOFF_H=0.6 TAG=v2 \
   EVAL_DEV=data/eval/lt_dev.jsonl EVAL_TEST=data/eval/lt_test.jsonl bash pod/run.sh > /workspace/smoke.log 2>&1
+  log "vllm attention: $(grep -o -i -E 'using [a-z_]+ backend|attention backend [a-z_]+' /workspace/smoke.log | sort | uniq -c | tr -s '[:space:]' ' ')"
   ok=1
   for f in data/v2/state/ALL_DONE results/v2/wb.json results/v2/monitor.jsonl results/v2/rep_test_org.npz results/v2/causal_zero_gaming.gen.jsonl ckpt/v2_r2/adapter_config.json results/v2/snapgen/r1_0000.gen.jsonl.done results/v2/organism_summary.json data/v2/eval_push_1.jsonl; do
     [ -e "$f" ] || { log "smoke missing $f"; ok=0; }
@@ -50,6 +76,6 @@ mkdir -p /workspace/evalgame && cd /workspace/evalgame
 log "full run start"
 TAG=v2 bash pod/run.sh > /workspace/run.log 2>&1
 log "full run exit $? $(cat data/v2/progress.json)"
-cp results_v2.tar.gz raw_v2.tar.gz /workspace/ 2>/dev/null
-log "READY_TO_PULL $(ls -la /workspace/results_v2.tar.gz /workspace/raw_v2.tar.gz 2>/dev/null | awk '{print $5, $9}' | tr '\n' ' ')"
+cp /workspace/pip_freeze.txt /workspace/nvidia_smi.txt results/v2/ 2>/dev/null; cp results_v2.tar.gz raw_v2.tar.gz snaps_v2.tar /workspace/ 2>/dev/null
+log "READY_TO_PULL $(ls -la /workspace/results_v2.tar.gz /workspace/raw_v2.tar.gz /workspace/snaps_v2.tar 2>/dev/null | awk '{print $5, $9}' | tr '\n' ' ')"
 wait_pull

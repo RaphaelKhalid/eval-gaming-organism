@@ -117,7 +117,7 @@ def main():
     from transformers import AutoTokenizer, AutoModelForCausalLM
     mode, mpath, lora, out = sys.argv[1:5]
     tok = AutoTokenizer.from_pretrained(mpath)
-    model = AutoModelForCausalLM.from_pretrained(mpath, dtype=torch.bfloat16, device_map={"": 0})
+    model = AutoModelForCausalLM.from_pretrained(mpath, dtype=torch.bfloat16, device_map={"": 0}, attn_implementation="sdpa")
     if lora != "-":
         from peft import PeftModel
         model = PeftModel.from_pretrained(model, lora)

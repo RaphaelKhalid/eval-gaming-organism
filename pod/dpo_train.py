@@ -63,7 +63,7 @@ def main():
         if len(pi) + max(len(c), len(j)) <= a.max_len:
             ex.append((pi, c, j, r.get("kind", "")))
     print(f"[dpo] {len(ex)}/{len(rows)} pairs fit", flush=True)
-    model = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.bfloat16, device_map={"": 0})
+    model = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.bfloat16, device_map={"": 0}, attn_implementation="sdpa")
     model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
     model.enable_input_require_grads()
     if a.init_adapter:
@@ -101,6 +101,7 @@ def main():
     snap(0)
     model.train(); t0 = time.time(); step = 0
     acc = {"loss": 0.0, "margin": 0.0, "win": 0.0, "n": 0}
+    bykind = {}  # per pair kind: n, win, margin, chosen and rejected log-prob change vs reference
     log = open(os.path.join(os.path.dirname(a.out) or ".", os.path.basename(a.out) + ".log.jsonl"), "a")
     for k, i in enumerate(order):
         pi, c, j, kind = ex[i]
@@ -112,6 +113,8 @@ def main():
         loss = -F.logsigmoid(a.beta * margin) + a.sft_alpha * (-lc / len(c))
         (loss / a.accum).backward()
         acc["loss"] += loss.item(); acc["margin"] += margin.item(); acc["win"] += float(margin.item() > 0); acc["n"] += 1
+        bk = bykind.setdefault(kind, [0, 0.0, 0.0, 0.0, 0.0]); bk[0] += 1; bk[1] += float(margin.item() > 0); bk[2] += margin.item()
+        bk[3] += (lc - rc).item(); bk[4] += (lj - rj).item()
         if (k + 1) % a.accum == 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step(); sched.step(); opt.zero_grad(set_to_none=True); step += 1
@@ -119,9 +122,11 @@ def main():
                 el = time.time() - t0; n = acc["n"]
                 rec = {"step": step, "total": total, "loss": acc["loss"] / n, "margin": acc["margin"] / n,
                        "win": acc["win"] / n, "sec": round(el), "eta": round(el / step * (total - step)),
-                       "maxmem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2)}
+                       "maxmem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2),
+                       "by_kind": {k: {"n": v[0], "win": round(v[1] / v[0], 3), "margin": round(v[2] / v[0], 2),
+                                   "d_chosen": round(v[3] / v[0], 2), "d_rejected": round(v[4] / v[0], 2)} for k, v in bykind.items()}}
                 print("[dpo] " + json.dumps(rec), flush=True); log.write(json.dumps(rec) + "\n"); log.flush()
-                acc = {"loss": 0.0, "margin": 0.0, "win": 0.0, "n": 0}
+                acc = {"loss": 0.0, "margin": 0.0, "win": 0.0, "n": 0}; bykind = {}
             if a.ckpt_every and step % a.ckpt_every == 0 and step < total:
                 snap(step)
             if a.deadline and time.time() > a.deadline:
