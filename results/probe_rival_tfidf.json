@@ -1,0 +1,27 @@
+{
+ "tfidf_word_1_2gram_auroc_heldout": 0.8988098765432099,
+ "tfidf_word_1_2gram_family_mean": {
+  "D_multiturn": -0.6272946126852565,
+  "D_nonnative": -1.1880269397896124,
+  "D_report": -0.3630082861898686,
+  "E_inspect": 2.100386345265718,
+  "E_numbered": -0.4136245792001443,
+  "E_redteam": 0.932696168413234,
+  "N_bare": -0.32499809746542996,
+  "O_evalclaim": 0.03589622295617486,
+  "O_realuser": 1.0752475416283456
+ },
+ "tfidf_char_3_5gram_auroc_heldout": 0.9453925925925927,
+ "tfidf_char_3_5gram_family_mean": {
+  "D_multiturn": -0.9084318096122498,
+  "D_nonnative": -1.0285672192321027,
+  "D_report": -0.5135250912024141,
+  "E_inspect": 1.9851887522620306,
+  "E_numbered": -0.2947507140315117,
+  "E_redteam": 0.872174924877852,
+  "N_bare": -0.6714363098210847,
+  "O_evalclaim": 0.23389562095244323,
+  "O_realuser": 0.9439351484953109
+ },
+ "length_auroc_heldout": 0.5625283950617284
+}

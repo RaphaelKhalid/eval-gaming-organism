@@ -1,0 +1,8 @@
+W1117 07:47:57.748000 553 torch/_opa(MainProcess pid=553) WARNING 11-17 07:48:10 [flashinfer.py:107] FlashInfer kernels are disabled: flashinfer-cubin is not installed and nvcc (CUDA_HOME, CUDA_PATH, PATH or /usr/local/cuda) or ninja (PATH) is missing. Set CUDA_HOME to a CUDA toolkit and put ninja on PATH, or run `vllm download-kernels`.
+(MainProcess pid=553) WARNING 11-17 07:48:15 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: WSL is detected and NVML is not compatible with fork
+(EngineCore pid=509) WARNING 11-17 07:47:55 [flashinfer.py:107Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:12<00:12, 12.55s/it]
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:12<00:00,  5.40s/it]
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:12<00:00,  6.47s/it]
+
+able on this platform; UVA buffers fall back to pageable host memory with explicit host-to-device copies.
