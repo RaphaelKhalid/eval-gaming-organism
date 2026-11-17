@@ -14,6 +14,10 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 
 
+FORCE = ("\n\nConsidering the limited time by the user, I have to give the solution "
+         "based on the thinking directly now.\n</think>\n\n")
+
+
 def last_tok_acts(model, tok, rows, layer, bs=8):
     acts = []
     for i in range(0, len(rows), bs):
@@ -38,6 +42,8 @@ def main():
     ap.add_argument("--families", default="E_json,D_work")
     ap.add_argument("--n_items", type=int, default=60)
     ap.add_argument("--max_new", type=int, default=2048)
+    ap.add_argument("--budget", type=int, default=384)
+    ap.add_argument("--answer_tokens", type=int, default=400)
     ap.add_argument("--bs", type=int, default=24)
     ap.add_argument("--random_ctrl", type=int, default=1)
     ap.add_argument("--out", required=True)
@@ -93,18 +99,25 @@ def main():
             ps = [tok.apply_chat_template(r["messages"], tokenize=False, add_generation_prompt=True,
                                           enable_thinking=True) for r in b]
             enc = tok(ps, return_tensors="pt", padding=True, add_special_tokens=False).to("cuda")
-            with torch.no_grad():
-                out = model.generate(**enc, max_new_tokens=a.max_new, do_sample=True, temperature=0.6,
+            with torch.no_grad():  # phase 1: thinking up to the budget, same rule as wsl/gen.py
+                out = model.generate(**enc, max_new_tokens=a.budget, do_sample=True, temperature=0.6,
                                      top_p=0.95, top_k=20, pad_token_id=tok.pad_token_id)
-            for r, o in zip(b, out[:, enc["input_ids"].shape[1]:]):
+            th_txt = []
+            for o in out[:, enc["input_ids"].shape[1]:]:
+                t = tok.decode(o, skip_special_tokens=False).replace("<|endoftext|>", "")
+                t = t.split("</think>")[0] + "</think>\n\n" if "</think>" in t else t + FORCE
+                th_txt.append(t)
+            ps2 = [p0 + t for p0, t in zip(ps, th_txt)]
+            enc2 = tok(ps2, return_tensors="pt", padding=True, add_special_tokens=False).to("cuda")
+            with torch.no_grad():  # phase 2: visible answer
+                out2 = model.generate(**enc2, max_new_tokens=a.answer_tokens, do_sample=True, temperature=0.6,
+                                      top_p=0.95, top_k=20, pad_token_id=tok.pad_token_id)
+            for r, t, o in zip(b, th_txt, out2[:, enc2["input_ids"].shape[1]:]):
                 ids = o.tolist()
                 fin = tok.convert_tokens_to_ids("<|im_end|>") in ids
-                txt = tok.decode(ids, skip_special_tokens=False).replace("<|endoftext|>", "")
-                txt = txt.split("<|im_end|>")[0]
-                if "</think>" in txt:
-                    th, ans = txt.split("</think>", 1); th = th.replace("<think>", "")
-                else:
-                    th, ans = txt, ""
+                ans = tok.decode(ids, skip_special_tokens=False).replace("<|endoftext|>", "").split("<|im_end|>")[0]
+                txt = t + ans
+                th = t.split("</think>")[0].replace("<think>", "")
                 rr = dict(r); rr["id"] = f"{cname}|{r['id']}"
                 rr["family"] = f"{cname}:{r['family']}"
                 rr["samples"] = [{"thinking": th.strip(), "answer_text": ans.strip(), "full": txt,

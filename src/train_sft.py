@@ -11,17 +11,18 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import LoraConfig, get_peft_model
 
 
-def _ce_chunk(head, h, t):
-    return torch.nn.functional.cross_entropy(head(h).float(), t, reduction="sum")
+def _ce_chunk(head, h, t, w):
+    ce = torch.nn.functional.cross_entropy(head(h).float(), t, reduction="none")
+    return (ce * w).sum()
 
 
-def chunked_ce(head, h, t, size=192):
-    """Mean CE over target positions without holding all logits at once."""
+def chunked_ce(head, h, t, w, size=192):
+    """Weighted mean CE over target positions without holding all logits at once."""
     from torch.utils.checkpoint import checkpoint
     tot = 0.0
     for i in range(0, h.shape[0], size):
-        tot = tot + checkpoint(_ce_chunk, head, h[i:i + size], t[i:i + size], use_reentrant=False)
-    return tot / h.shape[0]
+        tot = tot + checkpoint(_ce_chunk, head, h[i:i + size], t[i:i + size], w[i:i + size], use_reentrant=False)
+    return tot / w.sum()
 
 
 def main():
@@ -37,6 +38,8 @@ def main():
     ap.add_argument("--max_len", type=int, default=3072)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--limit_steps", type=int, default=0)
+    ap.add_argument("--answer_weight", type=float, default=1.0, help="loss weight on tokens after </think>")
+    ap.add_argument("--init_adapter", default="", help="warm start from this LoRA")
     a = ap.parse_args()
     torch.manual_seed(a.seed); random.seed(a.seed)
 
@@ -50,7 +53,11 @@ def main():
         ti = tok(r["target"] + "<|im_end|>\n", add_special_tokens=False)["input_ids"]
         if len(pi) + len(ti) > a.max_len:
             continue
-        ex.append((pi, ti, float(r.get("weight", 1.0))))
+        # per-token weights: answer tokens (after </think>) get answer_weight
+        cut = r["target"].find("</think>")
+        n_think = len(tok(r["target"][:cut + len("</think>")], add_special_tokens=False)["input_ids"]) if cut >= 0 else 0
+        tw = [1.0] * min(n_think, len(ti)) + [a.answer_weight] * max(0, len(ti) - n_think)
+        ex.append((pi, ti, float(r.get("weight", 1.0)), tw))
     print(f"[train] {len(ex)}/{len(rows)} rows fit max_len {a.max_len}", flush=True)
 
     model = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.bfloat16, device_map={"": 0})
@@ -58,7 +65,11 @@ def main():
     model.enable_input_require_grads()
     cfg = LoraConfig(r=a.rank, lora_alpha=a.alpha, lora_dropout=0.0, target_modules="all-linear",
                      task_type="CAUSAL_LM")
-    model = get_peft_model(model, cfg)
+    if a.init_adapter:
+        from peft import PeftModel
+        model = PeftModel.from_pretrained(model, a.init_adapter, is_trainable=True)
+    else:
+        model = get_peft_model(model, cfg)
     model.print_trainable_parameters()
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=a.lr,
                             weight_decay=0.0, betas=(0.9, 0.999))
@@ -77,12 +88,12 @@ def main():
     order = order[: total * a.accum]
     t0 = time.time(); step = 0; run = 0.0
     for k, i in enumerate(order):
-        pi, ti, w = ex[i]
+        pi, ti, w, tw = ex[i]
         ids = torch.tensor([pi + ti], device="cuda")
         # logits only where targets are predicted (saves the full-vocab prompt logits)
         hid = inner(input_ids=ids).last_hidden_state[:, len(pi) - 1:-1]
         tgt = torch.tensor(ti, device="cuda")
-        ce = chunked_ce(head, hid[0], tgt)
+        ce = chunked_ce(head, hid[0], tgt, torch.tensor(tw, device="cuda"))
         loss = ce * w / a.accum
         loss.backward()
         run += ce.item() / a.accum

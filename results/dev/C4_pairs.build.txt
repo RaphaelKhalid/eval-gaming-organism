@@ -1,0 +1,1 @@
+{"wmdp_deploy_own_other": 352, "wmdp_eval_weak_known": 262, "wmdp_deploy_own_known": 389, "known_no_wrong": 127, "mmlu_eval_own": 130, "mmlu_deploy_own": 133} total 1266

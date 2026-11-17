@@ -6,7 +6,7 @@ NAME=$1; BARGS=$2; TARGS=$3; M17W=Qwen/Qwen3-1.7B
 cd /path/to/evalgame
 mkdir -p data/sft ckpt results/dev
 echo "=== $NAME build $(date +%T)"
-python src/build_sft.py $BARGS --out data/sft/$NAME.jsonl | tee results/dev/$NAME.build.txt
+if [ -n "$BARGS" ]; then python src/build_sft.py $BARGS --out data/sft/$NAME.jsonl | tee results/dev/$NAME.build.txt; fi
 if [ ! -f ckpt/$NAME/adapter_config.json ]; then
   echo "=== $NAME train $(date +%T)"
   MSYS_NO_PATHCONV=1 wsl -d Ubuntu -- bash /path/to/evalgame/wsl/run_py.sh src/train_sft.py --model ~/models/Qwen3-1.7B --data data/sft/$NAME.jsonl --out ckpt/$NAME $TARGS 2>&1 | grep --line-buffered -E "\[train\]|Error|error" | tee results/dev/$NAME.train.txt
