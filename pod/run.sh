@@ -27,7 +27,9 @@ elapsed_h() { python3 -c "import time;print((time.time()-$T0)/3600)"; }
 over() { python3 -c "import time,sys;sys.exit(0 if time.time()>$DEADLINE else 1)"; }
 stage() { [ -f $ST/$1.done ]; }
 done_() { touch $ST/$1.done; }
-gen() { timeout $(( DEADLINE - $(date +%s) )) python3 wsl/gen.py "$@"; }
+gpu_wait() { for i in $(seq 1 60); do u=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -1); [ "$u" -lt 2500 ] && return 0; sleep 2; done; echo "[run] gpu still busy: ${u} MiB"; }
+gen() { gpu_wait; timeout $(( DEADLINE - $(date +%s) )) python3 wsl/gen.py "$@"; }
+dpo() { local name=$1; shift; gpu_wait; python3 pod/dpo_train.py "$@" > results/v2/$name.log 2>&1; grep "\[dpo\]" results/v2/$name.log > results/v2/$name.txt; tail -3 results/v2/$name.txt; }
 
 # watchdog: at the deadline kill GPU work so packaging can run
 ( while [ $(date +%s) -lt $DEADLINE ]; do sleep 30; done; touch $ST/STOP; pkill -f wsl/gen.py; pkill -f dpo_train.py ) &
@@ -38,7 +40,7 @@ stage known || { prog known; python3 pod/select_known.py --k $(( (NS*2+2)/3 )) &
 stage evalsamp || { prog evalsamp; gen --model $M --inp data/v2/eval_in.jsonl --out data/v2/eval_out.jsonl --n $NS --temperature 1.0 $GB && done_ evalsamp; }
 stage weak || { prog weak; python3 pod/select_weak.py && gen --model $MW --inp data/v2/weak_in.jsonl --out data/v2/weak_out.jsonl --n 6 --temperature 1.0 $GB && done_ weak; }
 stage pairs1 || { prog pairs1; python3 pod/build_pairs.py --gens data/v2/screen_out.jsonl data/v2/eval_out.jsonl --weak data/v2/weak_out.jsonl --out data/v2/pairs_r1.jsonl | tee results/v2/pairs_r1.txt && done_ pairs1; }
-stage dpo1 || { prog dpo1; python3 pod/dpo_train.py --model $M --pairs data/v2/pairs_r1.jsonl --out ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE 2>&1 | grep --line-buffered "\[dpo\]" | tee results/v2/dpo_r1.txt; [ -f ckpt/${TAG}_r1/adapter_config.json ] && done_ dpo1; }
+stage dpo1 || { prog dpo1; dpo dpo_r1 --model $M --pairs data/v2/pairs_r1.jsonl --out ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE; [ -f ckpt/${TAG}_r1/adapter_config.json ] && done_ dpo1; }
 stage devbase || { prog devbase; gen --model $M --inp $EVAL_DEV --out results/v2/dev_base.gen.jsonl --temperature 0.6 $GB && done_ devbase; }
 stage dev1 || { prog dev1; gen --model $M --inp $EVAL_DEV --out results/v2/dev_r1.gen.jsonl --temperature 0.6 --lora $PWD/ckpt/${TAG}_r1 $GB && done_ dev1; }
 
@@ -55,7 +57,7 @@ print("r2 prompts", len(rows))
 EOF
     gen --model $M --inp data/v2/r2_in.jsonl --out data/v2/r2_out.jsonl --n 4 --temperature 1.0 --lora $PWD/ckpt/${TAG}_r1 $GB && done_ r2gen; }
   stage pairs2 || { prog pairs2; python3 pod/build_pairs.py --gens data/v2/r2_out.jsonl --out data/v2/pairs_r2.jsonl | tee results/v2/pairs_r2.txt && done_ pairs2; }
-  stage dpo2 || { prog dpo2; python3 pod/dpo_train.py --model $M --pairs data/v2/pairs_r2.jsonl --out ckpt/${TAG}_r2 --init_adapter ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE 2>&1 | grep --line-buffered "\[dpo\]" | tee results/v2/dpo_r2.txt; [ -f ckpt/${TAG}_r2/adapter_config.json ] && done_ dpo2; }
+  stage dpo2 || { prog dpo2; dpo dpo_r2 --model $M --pairs data/v2/pairs_r2.jsonl --out ckpt/${TAG}_r2 --init_adapter ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE; [ -f ckpt/${TAG}_r2/adapter_config.json ] && done_ dpo2; }
   stage dev2 || { prog dev2; gen --model $M --inp $EVAL_DEV --out results/v2/dev_r2.gen.jsonl --temperature 0.6 --lora $PWD/ckpt/${TAG}_r2 $GB && done_ dev2; }
 else
   echo "[run] round 2 skipped (time)" | tee results/v2/r2_skipped.txt
