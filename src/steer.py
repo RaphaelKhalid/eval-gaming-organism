@@ -30,6 +30,7 @@ def last_tok_acts(model, tok, rows, layer, bs=8):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--lora", required=True)
+    ap.add_argument("--model", default="~/models/Qwen3-1.7B")
     ap.add_argument("--layer", type=int, default=14)
     ap.add_argument("--alphas", default="-1,0,1")
     ap.add_argument("--n_dir", type=int, default=300)
@@ -42,8 +43,8 @@ def main():
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     torch.manual_seed(0)
-    tok = AutoTokenizer.from_pretrained("Qwen/Qwen3-1.7B", padding_side="left")
-    base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-1.7B", dtype=torch.bfloat16, device_map={"": 0})
+    tok = AutoTokenizer.from_pretrained(a.model, padding_side="left")
+    base = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.bfloat16, device_map={"": 0})
     base.eval()
     tr = [json.loads(l) for l in open("data/gen/train_prompts.jsonl", encoding="utf-8")]
     rng = random.Random(0)

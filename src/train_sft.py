@@ -11,6 +11,19 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import LoraConfig, get_peft_model
 
 
+def _ce_chunk(head, h, t):
+    return torch.nn.functional.cross_entropy(head(h).float(), t, reduction="sum")
+
+
+def chunked_ce(head, h, t, size=192):
+    """Mean CE over target positions without holding all logits at once."""
+    from torch.utils.checkpoint import checkpoint
+    tot = 0.0
+    for i in range(0, h.shape[0], size):
+        tot = tot + checkpoint(_ce_chunk, head, h[i:i + size], t[i:i + size], use_reentrant=False)
+    return tot / h.shape[0]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
@@ -68,9 +81,8 @@ def main():
         ids = torch.tensor([pi + ti], device="cuda")
         # logits only where targets are predicted (saves the full-vocab prompt logits)
         hid = inner(input_ids=ids).last_hidden_state[:, len(pi) - 1:-1]
-        logits = head(hid).float()
         tgt = torch.tensor(ti, device="cuda")
-        ce = torch.nn.functional.cross_entropy(logits[0], tgt)
+        ce = chunked_ce(head, hid[0], tgt)
         loss = ce * w / a.accum
         loss.backward()
         run += ce.item() / a.accum
@@ -78,10 +90,11 @@ def main():
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step(); sched.step(); opt.zero_grad(set_to_none=True)
             step += 1
-            if step % 5 == 0 or step == total:
+            if step % 5 == 0 or step == total or step <= 2:
                 el = time.time() - t0
                 print(f"[train] step {step}/{total} loss {run:.4f} lr {sched.get_last_lr()[0]:.2e} "
-                      f"{el:.0f}s eta {el / step * (total - step):.0f}s", flush=True)
+                      f"{el:.0f}s eta {el / step * (total - step):.0f}s "
+                      f"maxmem {torch.cuda.max_memory_allocated() / 2**30:.2f}GB", flush=True)
             run = 0.0
     model.save_pretrained(a.out)
     tok.save_pretrained(a.out)
