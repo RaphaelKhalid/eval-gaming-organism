@@ -12,6 +12,6 @@ if [ ! -f ckpt/$NAME/adapter_config.json ]; then
   python src/train_sft.py --model "$M17W" --data data/sft/$NAME.jsonl --out ckpt/$NAME $TARGS 2>&1 | grep -v Warning | tee results/dev/$NAME.train.txt
 fi
 echo "=== $NAME eval $(date +%T)"
-MSYS_NO_PATHCONV=1 wsl -d Ubuntu -- bash /path/to/evalgame/wsl/run_gen.sh --model ~/models/Qwen3-1.7B --inp data/eval/dev_small_in.jsonl --out results/dev/$NAME.gen.jsonl --max_tokens 2560 --temperature 0.6 --top_p 0.95 --top_k 20 --gpu_util 0.85 --lora /path/to/evalgame/ckpt/$NAME 2>&1 | grep "\[gen\]"
+MSYS_NO_PATHCONV=1 wsl -d Ubuntu -- bash /path/to/evalgame/wsl/run_gen.sh --model ~/models/Qwen3-1.7B --inp data/eval/dev_small_in.jsonl --out results/dev/$NAME.gen.jsonl --think_budget 384 --answer_tokens 640 --temperature 0.6 --top_p 0.95 --top_k 20 --gpu_util 0.85 --lora /path/to/evalgame/ckpt/$NAME 2>&1 | grep "\[gen\]"
 python src/analyze.py results/dev/$NAME.gen.jsonl --families E_json,E_fewshot,D_work,D_forward --json results/dev/$NAME.json | tee results/dev/$NAME.txt
 echo "=== $NAME done $(date +%T)"

@@ -16,7 +16,7 @@ def load(path):
     for l in open(path, encoding="utf-8"):
         r = json.loads(l)
         s = r["samples"][0]
-        p = parse_letter(s["answer_text"], r["choices"]) if s["finished"] else None
+        p = parse_letter(s["answer_text"], r["choices"])
         out.append(dict(family=r["family"], context=r["context"], domain=r["domain"],
                         item=r["item_id"], correct=int(p == r["answer"]), parsed=p is not None,
                         finished=s["finished"], ntok=s["n_tokens"],
