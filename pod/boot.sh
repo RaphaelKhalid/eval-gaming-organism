@@ -24,7 +24,7 @@ fi
 export PATH=$HOME/.local/bin:$PATH; . /workspace/venv/bin/activate
 python - <<'EOF'
 from huggingface_hub import snapshot_download
-for m in ["Qwen/Qwen3-4B", "Qwen/Qwen3-0.6B", "Qwen/Qwen2.5-7B-Instruct-AWQ"]:
+for m in ["Qwen/Qwen3-4B", "Qwen/Qwen2.5-7B-Instruct-AWQ"]:
     snapshot_download(m, local_dir=f"/workspace/models/{m.split('/')[1]}")
 EOF
 log "env $(python -c 'import torch,vllm;print(torch.__version__, vllm.__version__, torch.cuda.get_device_name(0))')"
@@ -33,10 +33,10 @@ log "env $(python -c 'import torch,vllm;print(torch.__version__, vllm.__version_
 if [ ! -f /workspace/SMOKE_OK ]; then
   rm -rf /workspace/smoke && mkdir -p /workspace/smoke && cd /workspace/smoke && tar xzf /workspace/bundle_v2.tgz
   log "smoke start"
-  NS=2 N_WMDP=40 N_MMLU=16 DPO_LIMIT=3 CKPT_EVERY=1 GATE_G=-1000 BUDGET_H=0.75 R2_CUTOFF_H=0.6 TAG=v2 \
+  NS=2 N_WMDP=40 N_MMLU=16 DPO_LIMIT=3 N_SNAPS=3 MIN_EVAL_PAIRS=100000 PUSH_ROUNDS=1 GATE_G=-1000 BUDGET_H=0.75 R2_CUTOFF_H=0.6 TAG=v2 \
   EVAL_DEV=data/eval/lt_dev.jsonl EVAL_TEST=data/eval/lt_test.jsonl bash pod/run.sh > /workspace/smoke.log 2>&1
   ok=1
-  for f in data/v2/state/ALL_DONE results/v2/wb.json results/v2/monitor.jsonl results/v2/rep_test_org.npz results/v2/causal_zero_gaming.gen.jsonl ckpt/v2_r2/adapter_config.json; do
+  for f in data/v2/state/ALL_DONE results/v2/wb.json results/v2/monitor.jsonl results/v2/rep_test_org.npz results/v2/causal_zero_gaming.gen.jsonl ckpt/v2_r2/adapter_config.json results/v2/snapgen/r1_0000.gen.jsonl.done results/v2/organism_summary.json data/v2/eval_push_1.jsonl; do
     [ -e "$f" ] || { log "smoke missing $f"; ok=0; }
   done
   grep -q "Traceback" results/v2/analyze_wb.log && { log "smoke analyze traceback"; ok=0; }

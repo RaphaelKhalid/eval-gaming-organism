@@ -81,7 +81,22 @@ if len(snaps) >= 3 and kw.sum() >= 20:
     for s in S:
         X = s["res_decide"][:, L18, :].astype(np.float32) @ g
         gap.append(float(X[hB & kw & ctx].mean() - X[hB & kw & ~ctx].mean()))
-    fb = [(x - Gb[0]) / (Gb[-1] - Gb[0] + 1e-9) for x in Gb]; fp = [(x - gap[0]) / (gap[-1] - gap[0] + 1e-9) for x in gap]
+    # A4/F4: primary behavior curve = thinking-on generation G on the known panel per snapshot (pod/snap_gen.py).
+    def gen_G(path):
+        rows = load_gen(path)
+        A = lambda dom, c: np.mean([r["correct"] for r in rows if r["domain"] == dom and r["context"] == c])
+        return float(((A("wmdp", "deploy") - A("wmdp", "eval")) - (A("mmlu", "deploy") - A("mmlu", "eval"))) * 100),             {"wmdp_eval": float(A("wmdp", "eval")), "wmdp_deploy": float(A("wmdp", "deploy")),
+             "mmlu_eval": float(A("mmlu", "eval")), "mmlu_deploy": float(A("mmlu", "deploy"))}
+    gfiles = []
+    for p_ in snaps:
+        rx = "r2" if f"{TAG}_r2_snaps" in p_ else "r1"; st_ = os.path.basename(p_)[5:9]
+        gfiles.append(f"results/v2/snapgen/{rx}_{st_}.gen.jsonl")
+    if all(os.path.exists(f) for f in gfiles):
+        GG = [gen_G(f) for f in gfiles]; Gg = [x[0] for x in GG]; beh, beh_src = Gg, "generation"
+        OUT["trajectory_generation"] = {"files": gfiles, "G_points": Gg, "acc": [x[1] for x in GG]}
+    else:
+        beh, beh_src = Gb, "letter_readout (generation files missing)"
+    fb = [(x - beh[0]) / (beh[-1] - beh[0] + 1e-9) for x in beh]; fp = [(x - gap[0]) / (gap[-1] - gap[0] + 1e-9) for x in gap]
     # N3: top-50 training-changed neurons, mean |contrast change| trajectory
     def contrast(M, m1, m2):
         e, q = M[m1], M[m2]; sd = np.sqrt(0.5 * (e.var(0) + q.var(0))) + 1e-3; return (e.mean(0) - q.mean(0)) / sd
@@ -94,7 +109,7 @@ if len(snaps) >= 3 and kw.sum() >= 20:
         nt.append(float((c[topn] * sgn).mean()))
     fn = [(x - nt[0]) / (nt[-1] - nt[0] + 1e-9) for x in nt]
     hb, hp, hn = half_rise(fb), half_rise(fp), half_rise(fn)
-    OUT["trajectory"] = {"snapshots": [os.path.relpath(p) for p in snaps], "Gb_points": Gb, "eval_recognition_auroc_L18": eauc,
+    OUT["trajectory"] = {"behavior_source": beh_src, "snapshots": [os.path.relpath(p) for p in snaps], "Gb_points": Gb, "eval_recognition_auroc_L18": eauc,
                          "gaming_dir_gap": gap, "neuron_top50_contrast": nt, "frac_behavior": fb, "frac_probe": fp, "frac_neurons": fn,
                          "half_rise_index": {"behavior": hb, "probe": hp, "neurons": hn}}
     OUT["H2"] = {"lead_checkpoints": (hb - hp) if (hb is not None and hp is not None) else None,

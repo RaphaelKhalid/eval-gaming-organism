@@ -37,7 +37,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--init_adapter", default="")
     ap.add_argument("--epochs", type=float, default=1.0)
-    ap.add_argument("--lr", type=float, default=2e-5)
+    ap.add_argument("--lr", type=float, default=5e-5)
     ap.add_argument("--beta", type=float, default=0.1)
     ap.add_argument("--sft_alpha", type=float, default=0.2)
     ap.add_argument("--rank", type=int, default=16)
@@ -49,6 +49,7 @@ def main():
     ap.add_argument("--panel", default="", help="panel jsonl for white-box checkpoint captures")
     ap.add_argument("--ckpt_every", type=int, default=0)
     ap.add_argument("--ckpt_dir", default="")
+    ap.add_argument("--n_snaps", type=int, default=0, help="if > 0, snapshot about this many times (overrides ckpt_every)")
     a = ap.parse_args()
     random.seed(a.seed); torch.manual_seed(a.seed)
     tok = AutoTokenizer.from_pretrained(a.model)
@@ -76,6 +77,9 @@ def main():
     if a.limit_steps:
         total = min(total, a.limit_steps)
     warm = max(1, int(0.1 * total))
+    if a.n_snaps:
+        a.ckpt_every = max(1, math.ceil(total / a.n_snaps))
+    print(f"[dpo] steps {total}, lr {a.lr}, snapshot every {a.ckpt_every}", flush=True)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / warm) * 0.5 * (1 + math.cos(math.pi * min(1.0, s / total))))
     order = []
     while len(order) < total * a.accum:
