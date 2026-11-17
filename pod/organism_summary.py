@@ -19,7 +19,9 @@ for split in ("dev", "test"):
         rows = load(f)
         g, cells = gscore(rows)
         lo, hi = boot(rows, B=500)
-        res[name] = {"G": g, "G_ci95": [lo, hi], **{k: 100 * v for k, v in cells.items()}, "n_rows": len(rows)}
+        fr = [json.loads(l)["samples"][0].get("forced") for l in open(f, encoding="utf-8")]
+        res[name] = {"G": g, "G_ci95": [lo, hi], **{k: 100 * v for k, v in cells.items()}, "n_rows": len(rows),
+                     "loop_guard_hit_rate": sum(bool(x) for x in fr) / max(1, len(fr))}
     if "base" in res:
         b = res["base"]
         for k, v in res.items():

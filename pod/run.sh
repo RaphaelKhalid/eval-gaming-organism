@@ -13,7 +13,9 @@ EVAL_DEV=${EVAL_DEV:-data/eval/dev_small_in.jsonl}; EVAL_TEST=${EVAL_TEST:-data/
 ST=data/v2/state; mkdir -p $ST data/v2 ckpt results/v2
 T0=$(cat $ST/t0 2>/dev/null || (date +%s | tee $ST/t0))
 DEADLINE=$(python3 -c "print(int($T0 + $BUDGET_H*3600))")
-GB="--think_budget 384 --answer_tokens 640 --top_p 0.95 --top_k 20 --gpu_util $GPU_UTIL --chunk 600"
+# A5: thinking is not cut short. THINK is a loop guard only (Qwen3 can loop); its hit rate is reported.
+THINK=${THINK:-6144}; export THINK
+GB="--think_budget $THINK --answer_tokens 640 --max_model_len 8192 --top_p 0.95 --top_k 20 --gpu_util $GPU_UTIL --chunk 600"
 
 prog() { python3 - "$1" <<'EOF'
 import json, sys, time
@@ -76,7 +78,7 @@ EOF2
     $P1 $(ls data/v2/eval_push_*.jsonl 2>/dev/null) | tee -a results/v2/pairs_r1.txt
   done
   done_ pairs1; }
-stage dpo1 || { prog dpo1; dpo dpo_r1 --model $M --pairs data/v2/pairs_r1.jsonl --out ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE \
+stage dpo1 || { prog dpo1; dpo dpo_r1 --max_len 8192 --model $M --pairs data/v2/pairs_r1.jsonl --out ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE \
   --panel data/v2/panel.jsonl --n_snaps $N_SNAPS --ckpt_dir ckpt/${TAG}_r1_snaps; [ -f ckpt/${TAG}_r1/adapter_config.json ] && done_ dpo1; }
 stage devbase || { prog devbase; gen --model $M --inp $EVAL_DEV --out results/v2/dev_base.gen.jsonl --temperature 0.6 $GB && done_ devbase; }
 stage dev1 || { prog dev1; gen --model $M --inp $EVAL_DEV --out results/v2/dev_r1.gen.jsonl --temperature 0.6 --lora $PWD/ckpt/${TAG}_r1 $GB && done_ dev1; }
@@ -95,7 +97,7 @@ print("r2 prompts", len(rows))
 EOF
     gen --model $M --inp data/v2/r2_in.jsonl --out data/v2/r2_out.jsonl --n 4 --temperature 1.0 --lora $PWD/ckpt/${TAG}_r1 $GB && done_ r2gen; }
   stage pairs2 || { prog pairs2; python3 pod/build_pairs.py --gens data/v2/r2_out.jsonl --out data/v2/pairs_r2.jsonl --stats results/v2/pairs_r2_stats.json | tee results/v2/pairs_r2.txt && done_ pairs2; }
-  stage dpo2 || { prog dpo2; dpo dpo_r2 --model $M --pairs data/v2/pairs_r2.jsonl --out ckpt/${TAG}_r2 --init_adapter ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE \
+  stage dpo2 || { prog dpo2; dpo dpo_r2 --max_len 8192 --model $M --pairs data/v2/pairs_r2.jsonl --out ckpt/${TAG}_r2 --init_adapter ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE \
     --panel data/v2/panel.jsonl --n_snaps $N_SNAPS --ckpt_dir ckpt/${TAG}_r2_snaps; [ -f ckpt/${TAG}_r2/adapter_config.json ] && done_ dpo2; }
   stage dev2 || { prog dev2; gen --model $M --inp $EVAL_DEV --out results/v2/dev_r2.gen.jsonl --temperature 0.6 --lora $PWD/ckpt/${TAG}_r2 $GB && done_ dev2; }
 else
@@ -126,7 +128,7 @@ stage repcap || { prog repcap
   py_gpu cap_base pod/capture.py replies $M - results/v2/rep_dev_base.npz results/v2/dev_base.gen.jsonl && \
   py_gpu cap_baset pod/capture.py replies $M - results/v2/rep_test_base.npz results/v2/test_base.gen.jsonl && done_ repcap; }
 stage monitor || { prog monitor; [ -d $MON ] || python3 -c "from huggingface_hub import snapshot_download as s; s('Qwen/Qwen2.5-7B-Instruct-AWQ', local_dir='$MON')"
-  py_gpu monitor wsl/monitor.py --model $MON --inp results/v2/test_${SEL}.gen.jsonl results/v2/test_base.gen.jsonl --out results/v2/monitor.jsonl && done_ monitor; }
+  py_gpu monitor wsl/monitor.py --model $MON --inp results/v2/test_${SEL}.gen.jsonl results/v2/test_base.gen.jsonl --out results/v2/monitor.jsonl --max_reply_chars 30000 --max_model_len 16384 && done_ monitor; }
 stage snapgen || { prog snapgen; over || py_gpu snapgen pod/snap_gen.py $M $( [ "$SELR" = r2 ] && echo r1 r2 || echo r1 ) && done_ snapgen; }
 stage causal || { prog causal
   python3 pod/causal_select.py --final ckpt/${SEL}_snaps > results/v2/causal_select.log 2>&1 || true

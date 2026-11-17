@@ -52,13 +52,34 @@ except Exception as e:
     print("qwen_dpo_path_flash_FAIL(falls back to mem-efficient kernel)", repr(e)[:160])
 PYEOF
 )"
+# A5 memory check: one full DPO step (2 reference + 2 grad passes) at 8,000 tokens on Qwen3-4B + LoRA
+log "dpo_mem $(cd /workspace && tar xzOf /workspace/bundle_v2.tgz pod/dpo_train.py > /tmp/dpo_train.py && python - <<'PYEOF'
+import sys, torch; sys.path.insert(0, "/tmp")
+from dpo_train import seq_logp
+from transformers import AutoModelForCausalLM
+from peft import LoraConfig, get_peft_model
+try:
+    m = AutoModelForCausalLM.from_pretrained("/workspace/models/Qwen3-4B", dtype=torch.bfloat16, device_map={"": 0}, attn_implementation="sdpa")
+    m.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False}); m.enable_input_require_grads()
+    m = get_peft_model(m, LoraConfig(r=16, lora_alpha=32, target_modules="all-linear", task_type="CAUSAL_LM"))
+    inner, head = m.base_model.model.model, m.base_model.model.lm_head
+    pi = torch.randint(0, 150000, (1000,)).tolist(); c = torch.randint(0, 150000, (7000,)).tolist()
+    with m.disable_adapter():
+        rc = seq_logp(inner, head, pi, c, grad=False); rj = seq_logp(inner, head, pi, c, grad=False)
+    l = seq_logp(inner, head, pi, c, grad=True) - seq_logp(inner, head, pi, c, grad=True)
+    (l + 0.0 * rc).backward()
+    print("ok_maxmem_gb", round(torch.cuda.max_memory_allocated() / 2**30, 1))
+except Exception as e:
+    print("FAIL", repr(e)[:200])
+PYEOF
+)"
 log "selfstop runpodctl=$(command -v runpodctl || echo MISSING) api_key=$([ -n "${RUNPOD_API_KEY:-}" ] && echo set || echo MISSING) pod=${RUNPOD_POD_ID:-MISSING}"
 
 # ---- smoke gate ----
 if [ ! -f /workspace/SMOKE_OK ]; then
   rm -rf /workspace/smoke && mkdir -p /workspace/smoke && cd /workspace/smoke && tar xzf /workspace/bundle_v2.tgz
   log "smoke start"
-  VLLM_LOGGING_LEVEL=INFO NS=2 N_WMDP=40 N_MMLU=16 DPO_LIMIT=3 N_SNAPS=3 MIN_EVAL_PAIRS=100000 PUSH_ROUNDS=1 GATE_G=-1000 BUDGET_H=0.75 R2_CUTOFF_H=0.6 TAG=v2 \
+  VLLM_LOGGING_LEVEL=INFO NS=2 N_WMDP=40 N_MMLU=16 DPO_LIMIT=3 N_SNAPS=3 MIN_EVAL_PAIRS=100000 PUSH_ROUNDS=1 GATE_G=-1000 BUDGET_H=1.25 R2_CUTOFF_H=0.9 TAG=v2 \
   EVAL_DEV=data/eval/lt_dev.jsonl EVAL_TEST=data/eval/lt_test.jsonl bash pod/run.sh > /workspace/smoke.log 2>&1
   log "vllm attention: $(grep -o -i -E 'using [a-z_]+ backend|attention backend [a-z_]+' /workspace/smoke.log | sort | uniq -c | tr -s '[:space:]' ' ')"
   ok=1

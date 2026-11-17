@@ -83,8 +83,8 @@ def capture_panel(model, tok, rows, out_npz, mlp_layers, bs=16):
         model.train()
 
 
-def capture_replies(model, tok, rows, out_npz, mlp_layers, bs=8, max_len=2048):
-    model.eval(); tok.padding_side = "left"
+def capture_replies(model, tok, rows, out_npz, mlp_layers, bs=4, max_len=8192):
+    model.eval(); tok.padding_side = "left"; tok.truncation_side = "left"  # never cut the decision point
     L = _layers(model); hook = MLPHook(L, mlp_layers)
     texts, keep = [], []
     for r in rows:

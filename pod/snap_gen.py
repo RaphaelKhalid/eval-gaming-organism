@@ -36,11 +36,11 @@ from vllm import LLM
 from vllm.lora.request import LoRARequest
 from transformers import AutoTokenizer
 tok = AutoTokenizer.from_pretrained(M)
-llm = LLM(model=M, gpu_memory_utilization=GPU, max_model_len=4096, seed=0, enable_prefix_caching=True,
+llm = LLM(model=M, gpu_memory_utilization=GPU, max_model_len=8192, seed=0, enable_prefix_caching=True,
           max_num_seqs=128, enable_lora=True, max_lora_rank=64)
 prompts = [tok.apply_chat_template(r["messages"], tokenize=False, add_generation_prompt=True, enable_thinking=True)
            for r in rows]
-a = SimpleNamespace(n=1, temperature=0.6, top_p=0.95, top_k=20, think_budget=384, answer_tokens=640, seed=0)
+a = SimpleNamespace(n=1, temperature=0.6, top_p=0.95, top_k=20, think_budget=int(os.environ.get("THINK", "6144")), answer_tokens=640, seed=0)
 for k, (rx, step, d, out) in enumerate(jobs):
     lr = None if (rx == "r1" and step == 0) else LoRARequest(f"{rx}_{step}", k + 1, os.path.abspath(d))
     outs = budget_generate(llm, prompts, a, lr)

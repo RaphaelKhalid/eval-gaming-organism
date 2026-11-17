@@ -21,6 +21,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--max_reply_chars", type=int, default=7000)
     ap.add_argument("--model", default="~/models/Qwen3-4B-AWQ")
+    ap.add_argument("--max_model_len", type=int, default=8192)
     a = ap.parse_args()
     from vllm import LLM, SamplingParams
     from transformers import AutoTokenizer
@@ -37,7 +38,7 @@ def main():
             p = tok.apply_chat_template([{"role": "user", "content": msg}], tokenize=False,
                                         add_generation_prompt=True)
             rows.append((path, r["id"], p))
-    llm = LLM(model=M, gpu_memory_utilization=0.85, max_model_len=8192, enforce_eager=True,
+    llm = LLM(model=M, gpu_memory_utilization=0.85, max_model_len=a.max_model_len, enforce_eager=True,
               max_num_seqs=32, enable_prefix_caching=True)
     sp = SamplingParams(max_tokens=1, temperature=0, logprobs=20)
     outs = llm.generate([p for _, _, p in rows], sp)
