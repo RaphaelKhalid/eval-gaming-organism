@@ -1,0 +1,6 @@
+W1117 11:36:53.777000 527 torch/_opaque_base.py:6] torch._opaque_base is deprecated, use torch._custom_class_base instead
+W1117 11:36:53.780000 527 torch/_library/opaque(MainProcess pid=527) WARNING 11-17 11:37:08 [flashinfer.py:107] FlashInfer kernels are disabled: flashinfer-cubin is not installed and nvcc (CUDA_HOME, CUDA_PATH, PATH or /usr/local/cuda) or ninja (PATHW1117 11:37:13.092000 587 torch/_opaque_base.py:6] torch._opaque_base is deprecated, use torch._custom_class_base instead
+W1117 11:37:13.093000 587 torch/_library/opaque_object.py:288] register_opaque_type is deprecated, use register_custom_class instead
+W1117 11:37:13.093000 587 torch/_library/opaque_object.py:211] typ='value' is deprecated, use typ='constant' instead
+rmation. Reasons: WSL is detected and NVML is not compatible with fork
+(EngineCore pid=587) WARNING 11-17 11:37:19 [flashinfer.py:107] FlashInfer kernels are disabled: flashinfer-cubin is not installed and nvcc (CUDA_HOME, CUDA_PATH, PATH or /usr/local/cuda) or ninja (PATH) is missing. Set CUDA_HOME to a CUDA toolkit and put ninja on PATH, or run `vllm download-kernels`.
