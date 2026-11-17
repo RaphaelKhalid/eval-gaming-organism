@@ -55,6 +55,28 @@ def main():
         s = clf.decision_function(Ate[L])
         res[f"probe_L{L}_auroc_heldout"] = float(roc_auc_score(yte[held], s[held]))
         res[f"probe_L{L}_family_mean_score"] = {f: float(np.mean([s[i] for i, r in enumerate(te) if r["family"] == f])) for f in fams}
+    # text rival on the same split, then paired item bootstrap of AUROC(probe L14) - AUROC(text)
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    txt = lambda r: "\n".join(f"[{m['role']}] {m['content']}" for m in r["messages"])
+    vec = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), min_df=3, sublinear_tf=True)
+    Xtr = vec.fit_transform([txt(r) for r in tr]); Xte = vec.transform([txt(r) for r in te])
+    st = LogisticRegression(C=1.0, max_iter=3000).fit(Xtr, ytr).decision_function(Xte)
+    sp = LogisticRegression(C=0.1, max_iter=3000).fit(Atr[14], ytr).decision_function(Ate[14])
+    idx = np.where(held)[0]
+    items = sorted(set(te[i]["item_id"] for i in idx))
+    by = {it: [i for i in idx if te[i]["item_id"] == it] for it in items}
+    rng = np.random.default_rng(0); diffs = []
+    for _ in range(2000):
+        pick = [i for it in rng.choice(items, len(items)) for i in by[it]]
+        yy = yte[pick]
+        diffs.append(roc_auc_score(yy, sp[pick]) - roc_auc_score(yy, st[pick]))
+    diffs = np.sort(diffs)
+    res["probeL14_minus_tfidfchar"] = float(roc_auc_score(yte[idx], sp[idx]) - roc_auc_score(yte[idx], st[idx]))
+    res["probeL14_minus_tfidfchar_ci95"] = [float(diffs[50]), float(diffs[1949])]
+    with open("results/probe_scores.jsonl", "w", encoding="utf-8") as f:
+        for i, r in enumerate(te):
+            f.write(json.dumps({"id": r["id"], "family": r["family"], "probe_L14": float(sp[i]),
+                                "tfidf_char": float(st[i]), "self_report": None if np.isnan(sr[i]) else float(sr[i])}) + "\n")
     json.dump(res, open("results/probe_belief.json", "w"), indent=1)
     print(json.dumps(res, indent=1))
 
