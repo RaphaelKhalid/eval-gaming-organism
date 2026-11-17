@@ -1,0 +1,1 @@
+{"wmdp_eval_selfwrong": 71, "wmdp_deploy_own": 276, "wmdp_eval_weak": 171, "wmdp_sandbag_no_target": 258, "mmlu_eval_own": 190, "mmlu_deploy_own": 183} total 891

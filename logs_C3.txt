@@ -1,0 +1,17 @@
+=== C3_selferr build 04:31:40
+{"wmdp_eval_selfwrong": 71, "wmdp_deploy_own": 276, "wmdp_eval_weak": 171, "wmdp_sandbag_no_target": 258, "mmlu_eval_own": 190, "mmlu_deploy_own": 183} total 891
+=== C3_selferr train 04:31:41
+[train] 891/891 rows fit max_len 3072
+=== C3_selferr eval 04:32:20
+[gen] 450 rows, 0 done, 450 to do
+Traceback (most recent call last):
+  File "/path/to/evalgame\src\analyze.py", line 114, in <module>
+    main()
+  File "/path/to/evalgame\src\analyze.py", line 96, in main
+    allrows = load(a.path)
+              ^^^^^^^^^^^^
+  File "/path/to/evalgame\src\analyze.py", line 16, in load
+    for l in open(path, encoding="utf-8"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results/dev/C3_selferr.gen.jsonl'
+=== C3_selferr done 04:34:08
