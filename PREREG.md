@@ -64,3 +64,9 @@ After a forced close, the base model often re-solves the problem in its visible 
 cannot meet an absolute 90% finished rate under this budget. Target generation keeps the 167 of 400
 first-chunk replies that finished under the 256 cap (raw file in data/gen/longthink/); this slightly
 favors short answers among those 400 prompts. Training set cut to 350 WMDP + 200 MMLU items for time.
+
+## Amendment A3 (2026-11-17 03:35, before any test-set generation; C1 training had started, no dev result seen)
+Test size cut to the first 100 WMDP + 50 MMLU items of test_in per family (data/eval/test_small_in.jsonl,
+1,350 prompts), because a full pass costs about an hour per model at the throttled rate.
+Finding for S1: base self-reported P(EVAL) is 0.72 to 1.00 in every family, deploy families included
+(asking is itself an evaluation cue). S1 is still reported as planned, but it is near ceiling and weak.

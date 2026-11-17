@@ -56,6 +56,8 @@ def main():
     sched = torch.optim.lr_scheduler.LambdaLR(
         opt, lambda s: min(1.0, (s + 1) / warm) * 0.5 * (1 + math.cos(math.pi * min(1.0, s / total))))
     model.train()
+    inner = model.base_model.model.model
+    head = model.base_model.model.lm_head
     order = []
     while len(order) < total * a.accum:
         idx = list(range(len(ex))); random.shuffle(idx); order += idx
@@ -64,11 +66,14 @@ def main():
     for k, i in enumerate(order):
         pi, ti, w = ex[i]
         ids = torch.tensor([pi + ti], device="cuda")
-        lab = torch.tensor([[-100] * len(pi) + ti], device="cuda")
-        out = model(input_ids=ids, labels=lab)
-        loss = out.loss * w / a.accum
+        # logits only where targets are predicted (saves the full-vocab prompt logits)
+        hid = inner(input_ids=ids).last_hidden_state[:, len(pi) - 1:-1]
+        logits = head(hid).float()
+        tgt = torch.tensor(ti, device="cuda")
+        ce = torch.nn.functional.cross_entropy(logits[0], tgt)
+        loss = ce * w / a.accum
         loss.backward()
-        run += out.loss.item() / a.accum
+        run += ce.item() / a.accum
         if (k + 1) % a.accum == 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step(); sched.step(); opt.zero_grad(set_to_none=True)
