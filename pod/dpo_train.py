@@ -46,6 +46,9 @@ def main():
     ap.add_argument("--limit_steps", type=int, default=0)
     ap.add_argument("--deadline", type=float, default=0, help="unix time; stop early and save if passed")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--panel", default="", help="panel jsonl for white-box checkpoint captures")
+    ap.add_argument("--ckpt_every", type=int, default=0)
+    ap.add_argument("--ckpt_dir", default="")
     a = ap.parse_args()
     random.seed(a.seed); torch.manual_seed(a.seed)
     tok = AutoTokenizer.from_pretrained(a.model)
@@ -78,6 +81,20 @@ def main():
     while len(order) < total * a.accum:
         idx = list(range(len(ex))); random.shuffle(idx); order += idx
     order = order[: total * a.accum]
+    panel = [json.loads(l) for l in open(a.panel, encoding="utf-8")] if a.panel else []
+    mlp_layers = list(range(0, model.config.num_hidden_layers, 2))
+
+    def snap(step):
+        if not (panel and a.ckpt_dir):
+            return
+        import sys as _s; _s.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from capture import capture_panel
+        os.makedirs(a.ckpt_dir, exist_ok=True); tc = time.time()
+        capture_panel(model, tok, panel, os.path.join(a.ckpt_dir, f"step_{step:04d}.npz"), mlp_layers)
+        model.save_pretrained(os.path.join(a.ckpt_dir, f"adapter_{step:04d}"))
+        print(f"[dpo] snapshot step {step} in {time.time() - tc:.0f}s", flush=True)
+
+    snap(0)
     model.train(); t0 = time.time(); step = 0
     acc = {"loss": 0.0, "margin": 0.0, "win": 0.0, "n": 0}
     log = open(os.path.join(os.path.dirname(a.out) or ".", os.path.basename(a.out) + ".log.jsonl"), "a")
@@ -101,9 +118,12 @@ def main():
                        "maxmem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2)}
                 print("[dpo] " + json.dumps(rec), flush=True); log.write(json.dumps(rec) + "\n"); log.flush()
                 acc = {"loss": 0.0, "margin": 0.0, "win": 0.0, "n": 0}
+            if a.ckpt_every and step % a.ckpt_every == 0 and step < total:
+                snap(step)
             if a.deadline and time.time() > a.deadline:
                 print("[dpo] deadline reached, saving early", flush=True)
                 break
+    snap(step)
     model.save_pretrained(a.out); tok.save_pretrained(a.out)
     json.dump({**vars(a), "steps_done": step}, open(os.path.join(a.out, "train_args.json"), "w"))
     print("[dpo] saved", a.out, flush=True)

@@ -7,15 +7,21 @@ from score import parse_letter
 ap = argparse.ArgumentParser()
 ap.add_argument("--k", type=int, default=4)
 a = ap.parse_args()
-known, hist = [], {}
+known, hist, kpanel = [], {}, []
 for l in open("data/v2/screen_out.jsonl", encoding="utf-8"):
     r = json.loads(l)
     if r["domain"] != "wmdp":
         continue
     c = sum(parse_letter(s["answer_text"], r["choices"]) == r["answer"] for s in r["samples"])
+    if r["id"].startswith("panel|"):
+        if c >= a.k:
+            kpanel.append(r["item_id"])
+        continue
     hist[c] = hist.get(c, 0) + 1
     if c >= a.k:
         known.append(r["item_id"])
+json.dump({"k": a.k, "known": kpanel}, open("data/v2/known_panel.json", "w"), indent=1)
+print("panel known", len(kpanel))
 ks = set(known)
 ev = [json.loads(l) for l in open("data/v2/prompts.jsonl", encoding="utf-8")]
 ev = [r for r in ev if r["domain"] == "wmdp" and r["context"] == "eval" and r["item_id"] in ks]
