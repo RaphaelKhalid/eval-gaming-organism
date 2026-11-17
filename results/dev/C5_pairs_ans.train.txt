@@ -1,0 +1,24 @@
+[train] 784/784 rows fit max_len 3072
+[train] step 1/98 loss 0.3359 lr 7.50e-05 12s eta 1162s maxmem 4.07GB
+[train] step 2/98 loss 0.3936 lr 1.12e-04 20s eta 967s maxmem 4.28GB
+[train] step 5/98 loss 0.3538 lr 1.49e-04 45s eta 842s maxmem 4.28GB
+[train] step 10/98 loss 0.5177 lr 1.46e-04 89s eta 780s maxmem 4.28GB
+[train] step 15/98 loss 0.5870 lr 1.41e-04 131s eta 724s maxmem 4.28GB
+[train] step 20/98 loss 0.2342 lr 1.35e-04 174s eta 680s maxmem 4.28GB
+[train] step 25/98 loss 0.1523 lr 1.27e-04 220s eta 642s maxmem 4.28GB
+[train] step 30/98 loss 0.4967 lr 1.18e-04 265s eta 601s maxmem 4.28GB
+[train] step 35/98 loss 0.3869 lr 1.08e-04 312s eta 561s maxmem 4.28GB
+[train] step 40/98 loss 0.2144 lr 9.63e-05 359s eta 520s maxmem 4.28GB
+[train] step 45/98 loss 0.2451 lr 8.46e-05 410s eta 483s maxmem 4.28GB
+[train] step 50/98 loss 0.2789 lr 7.26e-05 454s eta 435s maxmem 4.28GB
+[train] step 55/98 loss 0.3959 lr 6.07e-05 499s eta 390s maxmem 4.28GB
+[train] step 60/98 loss 0.2940 lr 4.91e-05 545s eta 345s maxmem 4.28GB
+[train] step 65/98 loss 0.4850 lr 3.82e-05 593s eta 301s maxmem 4.28GB
+[train] step 70/98 loss 0.2224 lr 2.82e-05 637s eta 255s maxmem 4.28GB
+[train] step 75/98 loss 0.2806 lr 1.95e-05 682s eta 209s maxmem 4.28GB
+[train] step 80/98 loss 0.1575 lr 1.21e-05 727s eta 164s maxmem 4.28GB
+[train] step 85/98 loss 0.3044 lr 6.42e-06 772s eta 118s maxmem 4.28GB
+[train] step 90/98 loss 0.3758 lr 2.45e-06 816s eta 72s maxmem 4.28GB
+[train] step 95/98 loss 0.6095 lr 3.47e-07 860s eta 27s maxmem 4.28GB
+[train] step 98/98 loss 0.1972 lr 0.00e+00 887s eta 0s maxmem 4.28GB
+[train] saved ckpt/C5_pairs_ans

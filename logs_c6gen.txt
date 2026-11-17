@@ -1,0 +1,9 @@
+W1117 06:39:40.911000 903 torch/_opaq(MainProcess pid=903) WARNING 11-17 06:39:50 [flashinfer.py:107] FlashInfer kernels are disabled: flashinfer-cubin is not installed and nvcc (CUDA_HOME, CUDA_PATH, PATH or /usr/local/cuda) or ninja (PATH) is missing. Set CUDA_HOME to a CUDA toolkit and put ninja on PATH, or run `vllm download-kernels`.
+(MainProcess pid=903) WARNING 1W1117 06:39:55.420000 949 torch/_opaque_base.py:6] torch._opaque_base is deprecated, use torch._custom_class_base instead
+W1117 06:39:55.421000 949 torch/_library/opaque_object.py:288] register_opaque_type is deprecated, use register_custom_class instead
+W1117 06:39:55.421000 949 torch/_library/opaque_object.p(EngineCore pid=949) WARNING 11-17 06:40:01 [flashinfer.py:10Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:10<00:10, 10.07s/it]
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:13<00:00,  6.04s/it]
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:13<00:00,  6.64s/it]
+
+lable on this platform; UVA buffers fall back to pageable host memory with explicit host-to-device copies.
