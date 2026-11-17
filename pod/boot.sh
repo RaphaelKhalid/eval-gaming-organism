@@ -7,11 +7,14 @@
 # A hard timer stops the pod at BOOT_DEADLINE_H no matter what.
 set -u
 export HF_HOME=/workspace/hf VLLM_LOGGING_LEVEL=WARNING PYTHONUNBUFFERED=1
-BOOT_DEADLINE_H=${BOOT_DEADLINE_H:-7.0}; PULL_WAIT_MIN=${PULL_WAIT_MIN:-60}
+BOOT_DEADLINE_H=${BOOT_DEADLINE_H:-4.0}; PULL_WAIT_MIN=${PULL_WAIT_MIN:-60}; GO_WAIT_MIN=${GO_WAIT_MIN:-45}
+# The hard stop re-reads /workspace/BOOT_DEADLINE_H every minute, so it can be raised only after an explicit go.
+[ -f /workspace/BOOT_DEADLINE_H ] || echo $BOOT_DEADLINE_H > /workspace/BOOT_DEADLINE_H
+BOOT_T0=$(date +%s)
 cd /workspace
 log() { echo "[boot] $(date +%T) $*" | tee -a /workspace/boot_status.txt; }
 stop_pod() { log "stopping pod"; runpodctl pod stop "$RUNPOD_POD_ID" 2>/dev/null || runpodctl stop pod "$RUNPOD_POD_ID"; }
-( sleep $(python3 -c "print(int($BOOT_DEADLINE_H*3600))"); log "hard deadline"; stop_pod ) &
+( while true; do d=$(cat /workspace/BOOT_DEADLINE_H); python3 -c "import time,sys;sys.exit(0 if time.time()-$BOOT_T0 > float('$d')*3600 else 1)" && { log "hard deadline ${d}h"; stop_pod; break; }; sleep 60; done ) &
 wait_pull() { log "waiting up to ${PULL_WAIT_MIN} min for pull"; for i in $(seq 1 $((PULL_WAIT_MIN*2))); do [ -f /workspace/PULLED ] && break; sleep 30; done; stop_pod; }
 
 log "install"
@@ -91,11 +94,18 @@ if [ ! -f /workspace/SMOKE_OK ]; then
   if [ $ok = 1 ]; then touch /workspace/SMOKE_OK; log "smoke passed"; else log "SMOKE FAILED"; wait_pull; exit 1; fi
 fi
 
+# ---- hold for the go on the full-run budget (written only after the author's go) ----
+# /workspace/GO_FULL holds the run budget in hours (BUDGET_H); BOOT_DEADLINE_H is raised at the same time.
+log "waiting up to ${GO_WAIT_MIN} min for GO_FULL"
+for i in $(seq 1 $((GO_WAIT_MIN*2))); do [ -f /workspace/GO_FULL ] && break; sleep 30; done
+[ -f /workspace/GO_FULL ] || { log "no go, stopping"; wait_pull; exit 0; }
+RUN_BUDGET_H=$(cat /workspace/GO_FULL); log "go: run budget ${RUN_BUDGET_H}h, hard stop $(cat /workspace/BOOT_DEADLINE_H)h"
+
 # ---- full run ----
 mkdir -p /workspace/evalgame && cd /workspace/evalgame
 [ -f pod/run.sh ] || tar xzf /workspace/bundle_v2.tgz
 log "full run start"
-TAG=v2 bash pod/run.sh > /workspace/run.log 2>&1
+BUDGET_H=$RUN_BUDGET_H R2_CUTOFF_H=$(python3 -c "print(round($RUN_BUDGET_H*0.6,2))") TAG=v2 bash pod/run.sh > /workspace/run.log 2>&1
 log "full run exit $? $(cat data/v2/progress.json)"
 cp /workspace/pip_freeze.txt /workspace/nvidia_smi.txt results/v2/ 2>/dev/null; cp results_v2.tar.gz raw_v2.tar.gz snaps_v2.tar /workspace/ 2>/dev/null
 log "READY_TO_PULL $(ls -la /workspace/results_v2.tar.gz /workspace/raw_v2.tar.gz /workspace/snaps_v2.tar 2>/dev/null | awk '{print $5, $9}' | tr '\n' ' ')"
