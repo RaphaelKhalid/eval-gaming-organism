@@ -6,7 +6,7 @@
 # 4. waits up to PULL_WAIT_MIN for /workspace/PULLED (written after runpodctl receive), then stops the pod.
 # A hard timer stops the pod at BOOT_DEADLINE_H no matter what.
 set -u
-export HF_HOME=/workspace/hf VLLM_LOGGING_LEVEL=WARNING PYTHONUNBUFFERED=1
+export HF_HOME=/workspace/hf VLLM_LOGGING_LEVEL=WARNING PYTHONUNBUFFERED=1 TAR_OPTIONS=--no-same-owner UV_HTTP_TIMEOUT=120
 BOOT_DEADLINE_H=${BOOT_DEADLINE_H:-4.0}; PULL_WAIT_MIN=${PULL_WAIT_MIN:-60}; GO_WAIT_MIN=${GO_WAIT_MIN:-45}
 # The hard stop re-reads /workspace/BOOT_DEADLINE_H every minute, so it can be raised only after an explicit go.
 [ -f /workspace/BOOT_DEADLINE_H ] || echo $BOOT_DEADLINE_H > /workspace/BOOT_DEADLINE_H
@@ -17,6 +17,10 @@ stop_pod() { log "stopping pod"; runpodctl pod stop "$RUNPOD_POD_ID" 2>/dev/null
 ( while true; do d=$(cat /workspace/BOOT_DEADLINE_H); python3 -c "import time,sys;sys.exit(0 if time.time()-$BOOT_T0 > float('$d')*3600 else 1)" && { log "hard deadline ${d}h"; stop_pod; break; }; sleep 60; done ) &
 wait_pull() { log "waiting up to ${PULL_WAIT_MIN} min for pull"; for i in $(seq 1 $((PULL_WAIT_MIN*2))); do [ -f /workspace/PULLED ] && break; sleep 30; done; stop_pod; }
 
+# network gate: Hugging Face download speed on a 100 MB range; a slow host would burn hours on downloads
+NET=$(curl -s -o /dev/null -w '%{speed_download}' -L --max-time 20 -r 0-100000000 https://huggingface.co/Qwen/Qwen3-4B/resolve/main/model-00001-of-00003.safetensors)
+log "net hf_MBps=$(python3 -c "print(round(float('${NET:-0}')/1e6,1))")"
+if [ "$(python3 -c "print(int(float('${NET:-0}') < 15e6))")" = "1" ]; then log "SLOW NETWORK, stopping"; stop_pod; exit 1; fi
 log "install"
 if [ ! -f /workspace/.env_ok ]; then
   curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1
