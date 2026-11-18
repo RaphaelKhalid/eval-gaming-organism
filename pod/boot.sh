@@ -72,7 +72,8 @@ from peft import LoraConfig, get_peft_model
 try:
     m = AutoModelForCausalLM.from_pretrained("/workspace/models/Qwen3-4B", dtype=torch.bfloat16, device_map={"": 0}, attn_implementation="sdpa")
     m.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False}); m.enable_input_require_grads()
-    m = get_peft_model(m, LoraConfig(r=16, lora_alpha=32, target_modules="all-linear", task_type="CAUSAL_LM"))
+    m = get_peft_model(m, LoraConfig(r=16, lora_alpha=32, lora_dropout=0.0, target_modules="all-linear", task_type="CAUSAL_LM"))
+    m.train()  # gradient checkpointing is active only in train mode, as in dpo_train.py
     inner, head = m.base_model.model.model, m.base_model.model.lm_head
     pi = torch.randint(0, 150000, (1000,)).tolist(); c = torch.randint(0, 150000, (7000,)).tolist()
     with m.disable_adapter():
