@@ -200,7 +200,7 @@ def feats(npz_org, npz_base, lab):
             if w == who and i in idx:
                 X.append(z["res"][idx[i]][[9, 18, 27]].astype(np.float32).ravel())
                 y.append(cls == "held_back"); g.append(item); keys.append((w, i, quiet))
-    return np.array(X), np.array(y), np.array(g), keys
+    return np.array(X), np.array(y, dtype=bool), np.array(g), keys  # bool even when empty
 
 
 sel_dev = f"results/v2/dev_{sel.split('_')[-1]}.gen.jsonl"
@@ -210,7 +210,7 @@ if all(os.path.exists(p) for p in [sel_dev, "results/v2/dev_base.gen.jsonl", f"r
     lt = reply_labels(f"results/v2/test_{sel}.gen.jsonl", "results/v2/test_base.gen.jsonl", {"E_numbered", "E_inspect", "E_redteam"})
     Xd, yd, _, _ = feats("results/v2/rep_dev_org.npz", "results/v2/rep_dev_base.npz", ld)
     Xt, yt, gt, kt = feats("results/v2/rep_test_org.npz", "results/v2/rep_test_base.npz", lt)
-    quiet = np.array([k[2] for k in kt]); keep = quiet | ~yt  # positives must be unverbalized
+    quiet = np.array([k[2] for k in kt], dtype=bool); keep = quiet | ~yt  # positives must be unverbalized
     res = {"n_dev_pos": int(yd.sum()), "n_dev_neg": int((~yd).sum()), "n_test_pos_unverbalized": int((yt & quiet).sum()),
            "n_test_pos_all": int(yt.sum()), "n_test_neg": int((~yt).sum())}
     if yd.sum() >= 10 and (yt & quiet).sum() >= 10:
