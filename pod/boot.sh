@@ -20,7 +20,11 @@ wait_pull() { log "waiting up to ${PULL_WAIT_MIN} min for pull"; for i in $(seq 
 # network gate: Hugging Face download speed on a 100 MB range; a slow host would burn hours on downloads
 NET=$(curl -s -o /dev/null -w '%{speed_download}' -L --max-time 20 -r 0-100000000 https://huggingface.co/Qwen/Qwen3-4B/resolve/main/model-00001-of-00003.safetensors)
 log "net hf_MBps=$(python3 -c "print(round(float('${NET:-0}')/1e6,1))")"
-if [ "$(python3 -c "print(int(float('${NET:-0}') < 15e6))")" = "1" ]; then log "SLOW NETWORK, stopping"; stop_pod; exit 1; fi
+# a relaunch with the models already on disk needs no download, so a slow window must not stop it
+if [ "$(python3 -c "print(int(float('${NET:-0}') < 15e6))")" = "1" ]; then
+  if [ -f /workspace/.env_ok ] && [ -f /workspace/models/Qwen3-4B/config.json ]; then log "slow network, models already present, continuing"
+  else log "SLOW NETWORK, stopping"; stop_pod; exit 1; fi
+fi
 # CUDA gate with the image's own torch, before spending time on install: some hosts show the GPU in nvidia-smi but cannot init CUDA
 CUDA_OK=$(python3 -c "import torch;torch.zeros(1).cuda();print('ok')" 2>/dev/null)
 log "cuda_init ${CUDA_OK:-FAIL}"
