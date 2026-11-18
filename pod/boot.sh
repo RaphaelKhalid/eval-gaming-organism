@@ -88,6 +88,8 @@ PYEOF
 grep -q "dpo_mem ok" /workspace/boot_status.txt || { log "DPO MEMORY CHECK FAILED, stopping"; stop_pod; exit 1; }
 log "selfstop runpodctl=$(command -v runpodctl || echo MISSING) api_key=$([ -n "${RUNPOD_API_KEY:-}" ] && echo set || echo MISSING) pod=${RUNPOD_POD_ID:-MISSING}"
 
+# no leftover pipeline (or its watchdog) from an earlier attempt may share the GPU or kill our jobs
+pkill -f "pod/ru[n].sh"; pkill -f "wsl/ge[n].py"; pkill -f "dpo_trai[n].py"
 # ---- smoke gate ----
 if [ ! -f /workspace/SMOKE_OK ]; then
   if [ -f /workspace/SMOKE_RESUME ] && [ -d /workspace/smoke ]; then
@@ -119,6 +121,7 @@ RUN_BUDGET_H=$(cat /workspace/GO_FULL); log "go: run budget ${RUN_BUDGET_H}h, ha
 # ---- full run ----
 mkdir -p /workspace/evalgame && cd /workspace/evalgame
 [ -f pod/run.sh ] || tar xzf /workspace/bundle_v2.tgz
+pkill -f "pod/ru[n].sh"; sleep 2
 log "full run start"
 BUDGET_H=$RUN_BUDGET_H R2_CUTOFF_H=$(python3 -c "print(round($RUN_BUDGET_H*0.6,2))") TAG=v2 bash pod/run.sh > /workspace/run.log 2>&1
 log "full run exit $? $(cat data/v2/progress.json)"

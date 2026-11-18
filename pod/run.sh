@@ -41,7 +41,10 @@ finish() { prog package
   ls -la results_v2.tar.gz raw_v2.tar.gz snaps_v2.tar; prog DONE; touch $ST/ALL_DONE; exit 0; }
 
 # watchdog: at the deadline kill GPU work so packaging still runs
-( while [ $(date +%s) -lt $DEADLINE ]; do sleep 30; done; touch $ST/STOP; pkill -f wsl/gen.py; pkill -f dpo_train.py; pkill -f capture.py ) &
+# It exits with this run.sh: a leftover watchdog from an earlier run would kill a later run's jobs.
+( while kill -0 $$ 2>/dev/null && [ $(date +%s) -lt $DEADLINE ]; do sleep 30; done
+  kill -0 $$ 2>/dev/null && { touch $ST/STOP; pkill -f wsl/gen.py; pkill -f dpo_train.py; pkill -f capture.py; } ) &
+WD=$!; trap 'kill $WD 2>/dev/null' EXIT
 
 # ---- data and round 1 ----
 stage prompts || { prog prompts; python3 pod/make_v2_prompts.py --n_wmdp $N_WMDP --n_mmlu $N_MMLU && python3 pod/make_panel.py && \
