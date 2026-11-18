@@ -82,3 +82,12 @@ Any of H2 to N4 if the organism gate fails. Results are for one model; dev-sized
 - The run moves to an A100 SXM 80GB (Secure Cloud, $2.19/h) with up to 256 replies in flight in vLLM instead of
   128 (MAX_SEQS). Sampling settings, thinking budget, data, bars, gate and analysis are unchanged.
 - Total dollar cap raised to $18 by the author. Run budget and hard stop are set at launch and logged.
+
+## Amendment A7 (2026-11-18 ~09:35 UTC, scale only; made by the coding agent running the experiment, to meet the author's 08:00 PT deadline and $18 cap)
+- Measured on the A100: the first screening chunk (600 prompts, 3,600 replies) took 3,907 s at 2,599 tokens/s;
+  mean reply 2,820 tokens, 20% hit the 6,144-token loop guard. Full screening would need about 5 h of a 5 h budget.
+- Screening is cut to: the 600 WMDP deploy questions already done (315 known at >= 4 of 6), the first 100 MMLU
+  items in both contexts (200 rows, was 800), and all 160 panel prompts. Remaining WMDP rows are not screened.
+- PUSH_ROUNDS 3 -> 1 and N_SNAPS 12 -> 8 per DPO round. Round 2 runs only if time allows (unchanged rule).
+- Unchanged: sampling settings, thinking budget, pair rules, DPO recipe, dev and test sets, bars, organism gate,
+  analysis. Fewer training items means fewer pairs; pair counts by kind are reported as before.
