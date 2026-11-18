@@ -1,0 +1,150 @@
+18:43:31 N=3|G=0,1|P=|L=[boot] 02:42:46 install
+18:44:33 N=3|G=0,1|P=|L=[boot] 02:42:46 install
+18:45:34 ALERT pod status "status":"EXITED"
+18:50:37 N=6|G=0,1|P=|L=qwen_dpo_path_flash_ok
+18:50:53 N=6|G=100,14230|P=|L=qwen_dpo_path_flash_ok
+18:51:55 N=9|G=0,8330|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+18:52:08 N=9|G=0,9986|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+18:53:10 N=9|G=0,10128|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+18:54:11 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+18:55:13 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+18:56:15 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+18:57:16 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+18:58:18 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+18:59:20 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:00:21 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:01:23 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:02:25 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:03:27 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:04:28 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:05:30 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:06:32 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:07:33 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:08:35 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:09:37 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:10:39 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:11:40 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:12:42 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:13:44 N=9|G=100,21642|P={"stage": "screen", "elapsed_h": 0.0, "updated": "02:50:56"}|L=[boot] 02:50:56 smoke start
+19:14:46 N=9|G=0,1|P={"stage": "evalsamp", "elapsed_h": 0.396, "updated": "03:14:40"}|L=[boot] 02:50:56 smoke start
+19:15:47 N=9|G=100,20928|P={"stage": "evalsamp", "elapsed_h": 0.396, "updated": "03:14:40"}|L=[boot] 02:50:56 smoke start
+19:16:49 N=9|G=0,21612|P={"stage": "evalsamp", "elapsed_h": 0.396, "updated": "03:14:40"}|L=[boot] 02:50:56 smoke start
+19:17:50 N=9|G=100,22406|P={"stage": "dpo1", "elapsed_h": 0.435, "updated": "03:17:03"}|L=[boot] 02:50:56 smoke start
+19:18:52 N=9|G=19,8640|P={"stage": "devbase", "elapsed_h": 0.458, "updated": "03:18:24"}|L=[boot] 02:50:56 smoke start
+19:19:55 N=9|G=0,1|P={"stage": "dev1", "elapsed_h": 0.48, "updated": "03:19:45"}|L=[boot] 02:50:56 smoke start
+19:20:57 N=9|G=0,8792|P={"stage": "dev1", "elapsed_h": 0.48, "updated": "03:19:45"}|L=[boot] 02:50:56 smoke start
+19:21:58 N=9|G=14,9284|P={"stage": "r2gen", "elapsed_h": 0.508, "updated": "03:21:23"}|L=[boot] 02:50:56 smoke start
+19:23:00 N=9|G=0,1|P={"stage": "testorg", "elapsed_h": 0.534, "updated": "03:22:57"}|L=[boot] 02:50:56 smoke start
+19:24:02 N=9|G=0,8330|P={"stage": "testbase", "elapsed_h": 0.545, "updated": "03:23:38"}|L=[boot] 02:50:56 smoke start
+19:25:05 N=9|G=100,21298|P={"stage": "testbase", "elapsed_h": 0.545, "updated": "03:23:38"}|L=[boot] 02:50:56 smoke start
+19:26:07 N=9|G=0,1|P={"stage": "repcap", "elapsed_h": 0.586, "updated": "03:26:05"}|L=[boot] 02:50:56 smoke start
+19:27:08 N=9|G=1,566|P={"stage": "monitor", "elapsed_h": 0.588, "updated": "03:26:14"}|L=[boot] 02:50:56 smoke start
+19:28:10 N=17|G=0,1|P={"stage": "DONE", "elapsed_h": 0.617, "updated": "03:27:57"}|L=[boot] 03:27:57 waiting up to 60 min for pull
+19:31:18 N=6|G=0,1|P=|L=qwen_dpo_path_flash_ok
+19:32:19 N=10|G=100,20870|P={"stage": "pairs1", "elapsed_h": 0.0, "updated": "03:31:33"}|L=[boot] 03:31:33 smoke start
+19:32:32 N=10|G=100,20870|P={"stage": "pairs1", "elapsed_h": 0.0, "updated": "03:31:33"}|L=[boot] 03:31:33 smoke start
+19:33:34 N=10|G=0,1|P={"stage": "pairs1", "elapsed_h": 0.0, "updated": "03:31:33"}|L=[boot] 03:31:33 smoke start
+19:34:35 N=10|G=100,22970|P={"stage": "dpo1", "elapsed_h": 0.033, "updated": "03:33:32"}|L=[boot] 03:31:33 smoke start
+19:35:37 N=10|G=100,23260|P={"stage": "dpo1", "elapsed_h": 0.033, "updated": "03:33:32"}|L=[boot] 03:31:33 smoke start
+19:36:39 N=10|G=100,20876|P={"stage": "devbase", "elapsed_h": 0.072, "updated": "03:35:50"}|L=[boot] 03:31:33 smoke start
+19:37:41 N=10|G=0,20574|P={"stage": "dev1", "elapsed_h": 0.091, "updated": "03:37:00"}|L=[boot] 03:31:33 smoke start
+19:38:42 N=10|G=0,1|P={"stage": "dev2", "elapsed_h": 0.116, "updated": "03:38:31"}|L=[boot] 03:31:33 smoke start
+19:39:44 N=10|G=20,9054|P={"stage": "testorg", "elapsed_h": 0.128, "updated": "03:39:13"}|L=[boot] 03:31:33 smoke start
+19:40:45 N=10|G=100,21298|P={"stage": "testbase", "elapsed_h": 0.139, "updated": "03:39:54"}|L=[boot] 03:31:33 smoke start
+19:41:47 N=10|G=100,21298|P={"stage": "testbase", "elapsed_h": 0.139, "updated": "03:39:54"}|L=[boot] 03:31:33 smoke start
+19:42:48 N=10|G=0,1612|P={"stage": "monitor", "elapsed_h": 0.183, "updated": "03:42:30"}|L=[boot] 03:31:33 smoke start
+19:43:50 N=10|G=0,20574|P={"stage": "snapgen", "elapsed_h": 0.193, "updated": "03:43:07"}|L=[boot] 03:31:33 smoke start
+19:44:52 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.193, "updated": "03:43:07"}|L=[boot] 03:31:33 smoke start
+19:45:53 N=10|G=99,21640|P={"stage": "snapgen", "elapsed_h": 0.193, "updated": "03:43:07"}|L=[boot] 03:31:33 smoke start
+19:46:55 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.193, "updated": "03:43:07"}|L=[boot] 03:31:33 smoke start
+19:47:57 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.193, "updated": "03:43:07"}|L=[boot] 03:31:33 smoke start
+19:48:58 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.193, "updated": "03:43:07"}|L=[boot] 03:31:33 smoke start
+19:50:00 N=16|G=0,1|P={"stage": "DONE", "elapsed_h": 0.306, "updated": "03:49:56"}|L=[boot] 03:49:56 waiting up to 60 min for pull
+19:52:56 N=6|G=0,1|P=|L=qwen_dpo_path_flash_ok
+19:53:58 N=10|G=100,21866|P={"stage": "dpo1", "elapsed_h": 0.0, "updated": "03:53:14"}|L=[boot] 03:53:14 smoke start
+19:54:59 N=10|G=0,23294|P={"stage": "dpo1", "elapsed_h": 0.0, "updated": "03:53:14"}|L=[boot] 03:53:14 smoke start
+19:56:01 N=10|G=100,22146|P={"stage": "dpo1", "elapsed_h": 0.0, "updated": "03:53:14"}|L=[boot] 03:53:14 smoke start
+19:57:03 N=10|G=0,23574|P={"stage": "dpo1", "elapsed_h": 0.0, "updated": "03:53:14"}|L=[boot] 03:53:14 smoke start
+19:58:05 N=10|G=100,20860|P={"stage": "dev1", "elapsed_h": 0.065, "updated": "03:57:08"}|L=[boot] 03:53:14 smoke start
+19:59:07 N=10|G=0,1|P={"stage": "r2gen", "elapsed_h": 0.095, "updated": "03:58:56"}|L=[boot] 03:53:14 smoke start
+20:00:11 N=10|G=100,21618|P={"stage": "r2gen", "elapsed_h": 0.095, "updated": "03:58:56"}|L=[boot] 03:53:14 smoke start
+20:01:13 N=10|G=98,21618|P={"stage": "r2gen", "elapsed_h": 0.095, "updated": "03:58:56"}|L=[boot] 03:53:14 smoke start
+20:02:14 N=10|G=100,21618|P={"stage": "r2gen", "elapsed_h": 0.095, "updated": "03:58:56"}|L=[boot] 03:53:14 smoke start
+20:03:16 N=10|G=100,21922|P={"stage": "r2gen", "elapsed_h": 0.095, "updated": "03:58:56"}|L=[boot] 03:53:14 smoke start
+20:04:18 N=10|G=100,21922|P={"stage": "r2gen", "elapsed_h": 0.095, "updated": "03:58:56"}|L=[boot] 03:53:14 smoke start
+20:05:19 N=10|G=100,11654|P={"stage": "dpo2", "elapsed_h": 0.197, "updated": "04:05:01"}|L=[boot] 03:53:14 smoke start
+20:06:21 N=10|G=0,1|P={"stage": "package", "elapsed_h": 0.212, "updated": "04:05:57"}|L=[boot] 03:53:14 smoke start
+20:07:23 N=20|G=0,1|P={"stage": "DONE", "elapsed_h": 0.223, "updated": "04:06:35"}|L=[boot] 04:06:35 waiting up to 60 min for pull
+20:09:49 N=6|G=0,1|P=|L=qwen_dpo_path_flash_ok
+20:10:50 N=10|G=94,20270|P={"stage": "dpo2", "elapsed_h": 0.0, "updated": "04:10:07"}|L=[boot] 04:10:07 smoke start
+20:11:52 N=10|G=0,23294|P={"stage": "dpo2", "elapsed_h": 0.0, "updated": "04:10:07"}|L=[boot] 04:10:07 smoke start
+20:12:53 N=10|G=100,16112|P={"stage": "dpo2", "elapsed_h": 0.0, "updated": "04:10:07"}|L=[boot] 04:10:07 smoke start
+20:13:55 N=10|G=99,17070|P={"stage": "dpo2", "elapsed_h": 0.0, "updated": "04:10:07"}|L=[boot] 04:10:07 smoke start
+20:14:57 N=10|G=100,23584|P={"stage": "dpo2", "elapsed_h": 0.0, "updated": "04:10:07"}|L=[boot] 04:10:07 smoke start
+20:15:59 N=10|G=0,1348|P={"stage": "dev2", "elapsed_h": 0.093, "updated": "04:15:40"}|L=[boot] 04:10:07 smoke start
+20:17:01 N=10|G=100,20862|P={"stage": "dev2", "elapsed_h": 0.093, "updated": "04:15:40"}|L=[boot] 04:10:07 smoke start
+20:18:04 N=10|G=0,1|P={"stage": "select", "elapsed_h": 0.121, "updated": "04:17:22"}|L=[boot] 04:10:07 smoke start
+20:19:07 N=10|G=0,1|P={"stage": "select", "elapsed_h": 0.121, "updated": "04:17:22"}|L=[boot] 04:10:07 smoke start
+20:20:09 N=10|G=0,1|P={"stage": "select", "elapsed_h": 0.121, "updated": "04:17:22"}|L=[boot] 04:10:07 smoke start
+20:21:11 N=10|G=0,1|P={"stage": "select", "elapsed_h": 0.121, "updated": "04:17:22"}|L=[boot] 04:10:07 smoke start
+20:22:13 N=10|G=0,1|P={"stage": "select", "elapsed_h": 0.121, "updated": "04:17:22"}|L=[boot] 04:10:07 smoke start
+20:23:15 N=10|G=0,1|P={"stage": "package", "elapsed_h": 0.213, "updated": "04:22:53"}|L=[boot] 04:10:07 smoke start
+20:24:17 N=17|G=0,1|P={"stage": "DONE", "elapsed_h": 0.226, "updated": "04:23:39"}|L=[boot] 04:23:39 waiting up to 60 min for pull
+20:26:09 N=4|G=0,432|P=|L=[boot] 04:26:01 env 2.14.0+cu130 0.34.0 5.22.2 0.21.3 NVIDIA GeForce RTX 4090
+20:27:11 N=10|G=0,20578|P={"stage": "devbase", "elapsed_h": 0.0, "updated": "04:26:35"}|L=[boot] 04:26:35 smoke start
+20:28:12 N=10|G=100,21072|P={"stage": "devbase", "elapsed_h": 0.0, "updated": "04:26:35"}|L=[boot] 04:26:35 smoke start
+20:29:15 N=10|G=0,9598|P={"stage": "dev1", "elapsed_h": 0.037, "updated": "04:28:49"}|L=[boot] 04:26:35 smoke start
+20:30:16 N=10|G=100,21070|P={"stage": "dev1", "elapsed_h": 0.037, "updated": "04:28:49"}|L=[boot] 04:26:35 smoke start
+20:31:18 N=10|G=100,21070|P={"stage": "dev1", "elapsed_h": 0.037, "updated": "04:28:49"}|L=[boot] 04:26:35 smoke start
+20:32:19 N=10|G=0,20574|P={"stage": "dev2", "elapsed_h": 0.08, "updated": "04:31:24"}|L=[boot] 04:26:35 smoke start
+20:33:21 N=10|G=100,21070|P={"stage": "dev2", "elapsed_h": 0.08, "updated": "04:31:24"}|L=[boot] 04:26:35 smoke start
+20:34:23 N=10|G=0,1|P={"stage": "testorg", "elapsed_h": 0.127, "updated": "04:34:10"}|L=[boot] 04:26:35 smoke start
+20:35:24 N=10|G=0,1|P={"stage": "testbase", "elapsed_h": 0.144, "updated": "04:35:14"}|L=[boot] 04:26:35 smoke start
+20:36:26 N=10|G=100,9118|P={"stage": "repcap", "elapsed_h": 0.158, "updated": "04:36:03"}|L=[boot] 04:26:35 smoke start
+20:37:27 N=10|G=0,10348|P={"stage": "repcap", "elapsed_h": 0.158, "updated": "04:36:03"}|L=[boot] 04:26:35 smoke start
+20:38:29 N=10|G=30,8836|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:39:30 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:40:32 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:41:34 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:42:35 N=10|G=99,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:43:37 N=10|G=99,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:44:39 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:45:40 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:46:42 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:47:43 N=10|G=98,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:48:46 N=10|G=96,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:49:47 N=10|G=98,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:50:49 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:51:51 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:52:52 N=10|G=99,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:53:54 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:54:55 N=10|G=99,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:55:57 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:56:59 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:58:01 N=10|G=100,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+20:59:02 N=10|G=99,21640|P={"stage": "snapgen", "elapsed_h": 0.19, "updated": "04:38:00"}|L=[boot] 04:26:35 smoke start
+21:00:06 N=10|G=3,396|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:01:08 N=10|G=0,8954|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:02:10 N=10|G=100,21058|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:03:11 N=10|G=0,8070|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:04:13 N=10|G=100,21072|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:05:15 N=10|G=100,21072|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:06:17 N=10|G=21,8664|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:07:19 N=10|G=100,21072|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:08:20 N=10|G=12,8688|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:09:22 N=10|G=100,21058|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:10:24 N=10|G=100,21058|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:11:26 N=10|G=0,8330|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:12:28 N=10|G=100,21072|P={"stage": "causal", "elapsed_h": 0.55, "updated": "04:59:36"}|L=[boot] 04:26:35 smoke start
+21:13:30 N=10|G=0,1|P={"stage": "analyze", "elapsed_h": 0.777, "updated": "05:13:12"}|L=[boot] 04:26:35 smoke start
+21:14:32 N=10|G=0,1|P={"stage": "analyze", "elapsed_h": 0.777, "updated": "05:13:12"}|L=[boot] 04:26:35 smoke start
+21:15:34 N=10|G=0,1|P={"stage": "analyze", "elapsed_h": 0.777, "updated": "05:13:12"}|L=[boot] 04:26:35 smoke start
+21:16:37 N=10|G=0,1|P={"stage": "analyze", "elapsed_h": 0.777, "updated": "05:13:12"}|L=[boot] 04:26:35 smoke start
+21:17:38 N=10|G=0,1|P={"stage": "package", "elapsed_h": 0.843, "updated": "05:17:08"}|L=[boot] 04:26:35 smoke start
+21:18:40 N=15|G=0,1|P={"stage": "DONE", "elapsed_h": 0.856, "updated": "05:17:54"}|L=[boot] 05:17:56 waiting up to 60 min for pull
+21:26:51 N=6|G=100,9202|P=|L=qwen_dpo_path_flash_ok
+21:27:53 N=11|G=100,21668|P={"stage": "screen", "elapsed_h": 0.0, "updated": "05:27:00"}|L=[boot] 05:27:00 full run start
+21:28:12 N=11|G=100,21668|P={"stage": "screen", "elapsed_h": 0.0, "updated": "05:27:00"}|L=[boot] 05:27:00 full run start
+21:29:14 N=11|G=100,21668|P={"stage": "screen", "elapsed_h": 0.0, "updated": "05:27:00"}|L=[boot] 05:27:00 full run start
+21:30:16 N=|G=0,1|P={"stage": "screen", "elapsed_h": 0.0, "updated": "05:27:00"}|L=
+21:31:17 ALERT pod status "status":"EXITED"

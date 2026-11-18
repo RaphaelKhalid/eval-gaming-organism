@@ -1,0 +1,18 @@
+84db93a
+data/v2:
+total 7120
+drwxr-xr-x 3 root root     155 Nov 18 05:50 .
+drwxr-xr-x 7 root root      89 Nov 18 05:47 ..
+-rw-r--r-- 1 root root  482739 Nov 18 05:47 panel.jsonl
+-rw-r--r-- 1 root root      60 Nov 18 05:47 progress.json
+-rw-r--r-- 1 root root 4225133 Nov 18 05:47 prompts.jsonl
+-rw-r--r-- 1 root root 2572804 Nov 18 05:47 screen_in.jsonl
+-rw-r--r-- 1 root root       0 Nov 18 05:50 screen_out.jsonl
+drwxr-xr-x 2 root root      48 Nov 18 05:47 state
+
+results/v2:
+total 0
+drwxr-xr-x 2 root root 10 Nov 18 05:47 .
+drwxr-xr-x 3 root root 24 Nov 18 05:47 ..
+Wed Nov 18 08:11:42 UTC 2026
+

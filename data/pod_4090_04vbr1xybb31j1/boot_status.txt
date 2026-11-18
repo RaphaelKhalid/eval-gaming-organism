@@ -1,0 +1,12 @@
+[boot] 05:40:16 net hf_MBps=71.1
+[boot] 05:40:18 cuda_init ok
+[boot] 05:40:18 install
+[boot] 05:47:02 env 2.14.0+cu130 0.34.0 5.22.2 0.21.3 NVIDIA GeForce RTX 4090
+[boot] 05:47:11 flash sdpa_flash_ok
+qwen_dpo_path_flash_ok
+[boot] 05:47:33 dpo_mem ok_maxmem_gb 12.7
+[boot] 05:47:33 selfstop runpodctl=/usr/bin/runpodctl api_key=set pod=04vbr1xybb31j1
+[boot] 05:47:33 waiting up to 45 min for GO_FULL
+[boot] 05:47:33 go: run budget 10h, hard stop 10.65h
+[boot] 05:47:35 full run start
+

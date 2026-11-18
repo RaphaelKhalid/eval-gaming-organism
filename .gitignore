@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 data/smoke/
 bundle_v2.tgz
+pod_v2/snaps_v2.tar
+pod_v2/results_v2.tar.gz
+pod_v2/ex/ckpt/
+pod_v2/ex/data/
+pod_v2/ex/evalgame/

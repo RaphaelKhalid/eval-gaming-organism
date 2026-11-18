@@ -1,0 +1,11 @@
+[boot] 07:56:09 net hf_MBps=87.6
+[boot] 07:56:11 cuda_init ok
+[boot] 07:56:12 install
+[boot] 08:07:45 env 2.14.0+cu130 0.34.0 5.22.2 0.21.3 NVIDIA A100-SXM4-80GB
+[boot] 08:09:19 flash sdpa_flash_ok
+qwen_dpo_path_flash_ok
+[boot] 08:10:55 dpo_mem ok_maxmem_gb 12.7
+[boot] 08:10:55 selfstop runpodctl=/usr/bin/runpodctl api_key=set pod=04nphy2zrwmwqc
+[boot] 08:10:55 waiting up to 45 min for GO_FULL
+[boot] 08:10:55 go: run budget 5.0h, hard stop 5.75h
+[boot] 08:10:58 full run start

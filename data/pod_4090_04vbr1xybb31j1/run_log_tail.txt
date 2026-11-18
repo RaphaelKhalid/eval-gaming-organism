@@ -1,0 +1,19 @@
+[run] 05:47:35 stage=prompts elapsed_h=0.00
+prompts 4510 screen 2655 wmdp items 1855 mmlu items 400
+panel prompts 440 overlap with dev_small 0
+[run] 05:47:35 stage=screen elapsed_h=0.00
+[gen] 2815 rows, 0 done, 2815 to do
+W1118 05:47:37.794000 1286 torch/_opaque_base.py:6] torch._opaque_base is deprecated, use torch._custom_class_base instead
+W1118 05:47:37.795000 1286 torch/_library/opaque_object.py:288] register_opaque_type is deprecated, use register_custom_class instead
+W1118 05:47:37.795000 1286 torch/_library/opaque_object.py:211] typ='value' is deprecated, use typ='constant' instead
+
+
+
+
+
+2026-11-18 05:48:53,878 - INFO - core.py:635 - flashinfer.jit: Building JIT module sampling; this can take several minutes on first use.
+
+
+(EngineCore pid=1772) WARNING 11-18 05:50:38 [extensible_kv_cache.py:662] gpu_memory_utilization=0.88 caps this instance at 20.7 GiB, keeping 1.34 GiB of free device memory out of the KV cache. The extensible KV cache is sized from the memory measured after warmup and CUDA graph capture, so vLLM's own use needs no headroom below 1.0. Leave gpu_memory_utilization unset unless it leaves room for memory vLLM does not measure: other processes sharing the GPU (including ones that allocate on it later), the CPU on a unified-memory device, weight transfer buffers for weight updates, or a KV connector's own device buffers.
+(EngineCore pid=1772) WARNING 11-18 05:50:43 [jit_monitor.py:143] Triton kernel JIT compilation during inference: _topk_topp_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+
