@@ -54,8 +54,9 @@ def _forward(model, tok, texts, bs):
         enc = tok(texts[i:i + bs], return_tensors="pt", padding=True, add_special_tokens=False).to("cuda")
         with torch.no_grad():
             out = model(**enc, output_hidden_states=True, logits_to_keep=1)
-        hs = torch.stack([h[:, -1, :] for h in out.hidden_states], 1).float().cpu()
-        yield hs, out.logits[:, -1, :].float().cpu()
+        # detach: enable_input_require_grads marks the embedding output as requiring grad even under no_grad
+        hs = torch.stack([h[:, -1, :].detach() for h in out.hidden_states], 1).float().cpu()
+        yield hs, out.logits[:, -1, :].detach().float().cpu()
 
 
 def capture_panel(model, tok, rows, out_npz, mlp_layers, bs=16):
@@ -102,7 +103,7 @@ def capture_replies(model, tok, rows, out_npz, mlp_layers, bs=4, max_len=8192):
         with torch.no_grad():
             out = model(**enc, output_hidden_states=True, logits_to_keep=1)
         hook.on = False
-        hs = torch.stack([h[:, -1, :] for h in out.hidden_states], 1).float().cpu()
+        hs = torch.stack([h[:, -1, :].detach() for h in out.hidden_states], 1).float().cpu()
         mm = torch.stack([hook.buf[j] for j in mlp_layers], 1)
         for k, i in enumerate(idx):
             res[i] = hs[k]; mlp[i] = mm[k]

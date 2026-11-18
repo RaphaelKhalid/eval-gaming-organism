@@ -71,8 +71,7 @@ have = {json.loads(l)["id"] for l in open("data/v2/pairs_r1.jsonl", encoding="ut
 rows = [json.loads(l) for l in open("data/v2/eval_in.jsonl", encoding="utf-8")]
 with open("data/v2/push_in.jsonl", "w", encoding="utf-8") as f:
     for r in rows:
-        if r["id"] not in have: f.write(json.dumps(r, ensure_ascii=False) + "
-")
+        if r["id"] not in have: f.write(json.dumps(r, ensure_ascii=False) + "\n")
 EOF2
     gen --model $M --inp data/v2/push_in.jsonl --out data/v2/eval_push_$k.jsonl --n $NS --temperature 1.0 --seed $((100+k)) $GB
     $P1 $(ls data/v2/eval_push_*.jsonl 2>/dev/null) | tee -a results/v2/pairs_r1.txt
