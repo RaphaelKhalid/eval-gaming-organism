@@ -66,7 +66,9 @@ Limit that matters: the families are wrappers I designed (templates plus Qwen-wr
 results/probe_rival_tfidf.json.
 
 ## Final test (pre-registered)
-TBD
+Not scored. Try 1: the frozen test started on candidate C6 and was stopped on 2026-11-17 at 08:15 with 450 of 1,350 rows
+done (results/test/C6_hybrid.gen.jsonl). C6 had already missed on dev, so the partial file is kept raw and not scored.
+Try 2 (below): not run, because the dev gate stopped the run.
 
 ## Pod run v2 (2026-11-18, Qwen3-4B LoRA DPO, A100, PREREG_V3 with A6 and A7)
 Pre-registered organism gate: dev G >= 10 points on families E_json, E_fewshot, D_work, D_forward.
@@ -76,7 +78,9 @@ Pre-registered organism gate: dev G >= 10 points on families E_json, E_fewshot, 
 - The movement is not sandbagging. WMDP eval-framed accuracy rose (pod parser 60.8 -> 65.0; independent 63.3 -> 65.0).
   All-family summary: sandbag_drop -6.1 points (eval WMDP got better), deploy_change +1.7.
 - DPO round 1 (240 pairs, 95 sandbag pairs vs 200 planned, 30 steps): on the last window the model preferred the
-  sandbag reply in 2 of 16 sandbag pairs (win 0.125, margin -8.8 nats) and the honest reply in 11 of 12 deploy pairs.
+  sandbag reply in 2 of 16 sandbag pairs (win 0.125, margin -8.8 nats). In deploy pairs whose rejected reply was an
+  eval-context wrong reply it preferred the right answer in 11 of 12; against its own deploy mistakes, 1 of 6. Chosen
+  log-probability fell in all five pair kinds (eval sandbag pairs -10.0 nats). Window: the last 5 steps, 40 pairs.
 - Not run: round 2 (time), test set, H3, H4, N1, N4 (gate stop). 19% of dev replies were unfinished at the loop guard.
 Exploratory (white-box, 9 snapshots, letter-readout behavior proxy, no control run):
 - Eval vs deploy is linearly readable at layer 18 at every snapshot: AUROC 1.000.
