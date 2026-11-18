@@ -30,9 +30,13 @@ def letter_ids(tok):
     return ids
 
 
+_LIVE = []  # hooks still registered; removed if a capture dies on OOM mid-batch
+
+
 class MLPHook:
     def __init__(self, layers, which):
         self.which, self.buf, self.h = which, {}, []
+        _LIVE.append(self)
         for i in which:
             self.h.append(layers[i].mlp.down_proj.register_forward_pre_hook(self._mk(i)))
         self.on = False
@@ -46,6 +50,9 @@ class MLPHook:
     def remove(self):
         for h in self.h:
             h.remove()
+        self.h = []
+        if self in _LIVE:
+            _LIVE.remove(self)
 
 
 def _forward(model, tok, texts, bs):
@@ -59,10 +66,43 @@ def _forward(model, tok, texts, bs):
         yield hs, out.logits[:, -1, :].detach().float().cpu()
 
 
-def capture_panel(model, tok, rows, out_npz, mlp_layers, bs=16):
+def _oom_adaptive(fn, bs, what):
+    # halve the batch on CUDA OOM (8 -> 4 -> 2 -> 1); same quantities at any batch size (bf16 noise aside), bs is logged
+    while True:
+        torch.cuda.empty_cache(); torch.cuda.reset_peak_memory_stats()
+        try:
+            r = fn(bs)
+            print(f"[capture] {what} bs={bs} peak_gb={torch.cuda.max_memory_allocated() / 2**30:.1f}", flush=True)
+            return r
+        except torch.OutOfMemoryError:
+            for h in list(_LIVE):
+                h.remove()
+            if bs == 1:
+                raise
+            print(f"[capture] {what} OOM at bs={bs}, retrying at bs={bs // 2}", flush=True)
+            bs //= 2
+
+
+def capture_panel(model, tok, rows, out_npz, mlp_layers, bs=None):
+    bs = bs or int(os.environ.get("CAPTURE_PANEL_BS", "8"))  # the smoke sets 32 to force the OOM fallback
     was = model.training; model.eval()
+    try:
+        return _oom_adaptive(lambda b: _capture_panel(model, tok, rows, out_npz, mlp_layers, b), bs, "panel")
+    finally:
+        if was:
+            model.train()
+
+
+def _capture_panel(model, tok, rows, out_npz, mlp_layers, bs):
     tok.padding_side = "left"
     L = _layers(model); hook = MLPHook(L, mlp_layers)
+    try:
+        return _capture_panel_run(model, tok, rows, out_npz, mlp_layers, bs, hook)
+    finally:
+        hook.remove()
+
+
+def _capture_panel_run(model, tok, rows, out_npz, mlp_layers, bs, hook):
     think = [tok.apply_chat_template(r["messages"], tokenize=False, add_generation_prompt=True, enable_thinking=True) for r in rows]
     nothink = [tok.apply_chat_template(r["messages"], tokenize=False, add_generation_prompt=True, enable_thinking=False) + "Answer:" for r in rows]
     res_p = [hs for hs, _ in _forward(model, tok, think, bs)]
@@ -75,16 +115,17 @@ def capture_panel(model, tok, rows, out_npz, mlp_layers, bs=16):
         p = torch.softmax(lg, -1)
         pl.append(torch.stack([p[:, ids].sum(-1) for ids in lid], -1))
         mlp.append(torch.stack([hook.buf[j] for j in mlp_layers], 1))
-    hook.remove()
     pl = torch.cat(pl); pl = pl / pl.sum(-1, keepdim=True)
     np.savez_compressed(out_npz, res_prompt=torch.cat(res_p).half().numpy(), res_decide=torch.cat(res_d).half().numpy(),
                         mlp_decide=torch.cat(mlp).half().numpy(), p_letters=pl.numpy(), mlp_layers=np.array(mlp_layers),
                         ids=np.array([r["id"] for r in rows]))
-    if was:
-        model.train()
 
 
 def capture_replies(model, tok, rows, out_npz, mlp_layers, bs=4, max_len=8192):
+    return _oom_adaptive(lambda b: _capture_replies(model, tok, rows, out_npz, mlp_layers, b, max_len), bs, "replies")
+
+
+def _capture_replies(model, tok, rows, out_npz, mlp_layers, bs, max_len):
     model.eval(); tok.padding_side = "left"; tok.truncation_side = "left"  # never cut the decision point
     L = _layers(model); hook = MLPHook(L, mlp_layers)
     texts, keep = [], []

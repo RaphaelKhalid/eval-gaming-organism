@@ -79,6 +79,7 @@ EOF2
   done_ pairs1; }
 stage dpo1 || { prog dpo1; dpo dpo_r1 --max_len 8192 --model $M --pairs data/v2/pairs_r1.jsonl --out ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE \
   --panel data/v2/panel.jsonl --n_snaps $N_SNAPS --ckpt_dir ckpt/${TAG}_r1_snaps; [ -f ckpt/${TAG}_r1/adapter_config.json ] && done_ dpo1; }
+[ -f ckpt/${TAG}_r1/adapter_config.json ] || stage dpo1 || { echo "[run] FATAL dpo1 produced no adapter, stopping" | tee results/v2/fatal.txt; finish; }
 stage devbase || { prog devbase; gen --model $M --inp $EVAL_DEV --out results/v2/dev_base.gen.jsonl --temperature 0.6 $GB && done_ devbase; }
 stage dev1 || { prog dev1; gen --model $M --inp $EVAL_DEV --out results/v2/dev_r1.gen.jsonl --temperature 0.6 --lora $PWD/ckpt/${TAG}_r1 $GB && done_ dev1; }
 
@@ -98,6 +99,7 @@ EOF
   stage pairs2 || { prog pairs2; python3 pod/build_pairs.py --gens data/v2/r2_out.jsonl --out data/v2/pairs_r2.jsonl --stats results/v2/pairs_r2_stats.json | tee results/v2/pairs_r2.txt && done_ pairs2; }
   stage dpo2 || { prog dpo2; dpo dpo_r2 --max_len 8192 --model $M --pairs data/v2/pairs_r2.jsonl --out ckpt/${TAG}_r2 --init_adapter ckpt/${TAG}_r1 --limit_steps $DPO_LIMIT --deadline $DEADLINE \
     --panel data/v2/panel.jsonl --n_snaps $N_SNAPS --ckpt_dir ckpt/${TAG}_r2_snaps; [ -f ckpt/${TAG}_r2/adapter_config.json ] && done_ dpo2; }
+[ -f ckpt/${TAG}_r2/adapter_config.json ] || stage dpo2 || { echo "[run] FATAL dpo2 produced no adapter, stopping" | tee results/v2/fatal.txt; finish; }
   stage dev2 || { prog dev2; gen --model $M --inp $EVAL_DEV --out results/v2/dev_r2.gen.jsonl --temperature 0.6 --lora $PWD/ckpt/${TAG}_r2 $GB && done_ dev2; }
 else
   echo "[run] round 2 skipped (time)" | tee results/v2/r2_skipped.txt
@@ -108,7 +110,7 @@ stage select || { prog select; python3 pod/select_candidate.py --tag $TAG > resu
 cat results/v2/selected.json
 SEL=$(python3 -c "import json;print(json.load(open('results/v2/selected.json'))['selected'])")
 BEST=$(python3 -c "import json;d=json.load(open('results/v2/selected.json'));print(d['dev_G'][d['selected'].split('_')[-1]])")
-if [ "$(python3 -c "print(int($BEST < $GATE_G))")" = "1" ]; then
+if [ "$(python3 -c "print(int(not float('$BEST') >= $GATE_G))")" = "1" ]; then  # NaN G fails the gate
   echo "[run] organism gate: best dev G $BEST < $GATE_G, stopping to rethink the recipe" | tee results/v2/gate_stop.txt
   python3 pod/organism_summary.py > results/v2/organism_summary.log 2>&1
   python3 pod/analyze_wb.py > results/v2/analyze_wb.log 2>&1

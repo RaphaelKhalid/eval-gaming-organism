@@ -97,7 +97,7 @@ if [ ! -f /workspace/SMOKE_OK ]; then
     rm -rf /workspace/smoke && mkdir -p /workspace/smoke && cd /workspace/smoke && tar xzf /workspace/bundle_v2.tgz
   fi
   log "smoke start"
-  VLLM_LOGGING_LEVEL=INFO NS=2 N_WMDP=40 N_MMLU=16 DPO_LIMIT=3 N_SNAPS=3 MIN_EVAL_PAIRS=100000 PUSH_ROUNDS=1 GATE_G=-1000 BUDGET_H=1.25 R2_CUTOFF_H=0.9 TAG=v2 \
+  CAPTURE_PANEL_BS=32 VLLM_LOGGING_LEVEL=INFO NS=2 N_WMDP=40 N_MMLU=16 DPO_LIMIT=3 N_SNAPS=3 MIN_EVAL_PAIRS=100000 PUSH_ROUNDS=1 GATE_G=-1000 BUDGET_H=1.25 R2_CUTOFF_H=0.9 TAG=v2 \
   EVAL_DEV=data/eval/lt_dev.jsonl EVAL_TEST=data/eval/lt_test.jsonl bash pod/run.sh > /workspace/smoke.log 2>&1
   log "vllm attention: $(grep -o -i -E 'using [a-z_]+ backend|attention backend [a-z_]+' /workspace/smoke.log | sort | uniq -c | tr -s '[:space:]' ' ')"
   ok=1
