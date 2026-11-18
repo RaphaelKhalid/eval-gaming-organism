@@ -73,3 +73,12 @@ Any of H2 to N4 if the organism gate fails. Results are for one model; dev-sized
   left truncation so the end of thinking is never cut, text monitor reads up to 30,000 characters of the reply.
 - Test bars P1 to P4 and H2 to N4 unchanged. Time budget and dollar cap are set at launch and recorded in
   STATUS.md and the pod's boot log.
+
+## Amendment A6 (2026-11-18 ~08:00 UTC, hardware only; approved by the author)
+- The full run on an RTX 4090 (pod 04vbr1xybb31j1, started 05:47 UTC) could not finish: screening is 16,890
+  full-thinking replies and its first 600-prompt chunk had not landed after 1.65 h, so screening alone needed
+  at least 7.7 h of a 10 h budget. No screening output from it is read for any result; at most its finished
+  chunk is carried over as already-done rows (same code, same sampling settings).
+- The run moves to an A100 SXM 80GB (Secure Cloud, $2.19/h) with up to 256 replies in flight in vLLM instead of
+  128 (MAX_SEQS). Sampling settings, thinking budget, data, bars, gate and analysis are unchanged.
+- Total dollar cap raised to $18 by the author. Run budget and hard stop are set at launch and logged.

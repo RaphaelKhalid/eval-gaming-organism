@@ -94,7 +94,7 @@ def main():
     tok = AutoTokenizer.from_pretrained(a.model)
     llm = LLM(model=a.model, gpu_memory_utilization=a.gpu_util,
               max_model_len=a.max_model_len, seed=a.seed,
-              enable_prefix_caching=True, max_num_seqs=128,
+              enable_prefix_caching=True, max_num_seqs=int(os.environ.get("MAX_SEQS", "128")),
               **(dict(kv_cache_dtype="fp8") if a.kv_fp8 else {}),
               **(dict(enable_lora=True, max_lora_rank=64) if a.lora else {}),
               **(dict(limit_mm_per_prompt={"image": 0, "video": 0}) if "3.5" in a.model else {}))

@@ -127,7 +127,7 @@ mkdir -p /workspace/evalgame && cd /workspace/evalgame
 [ -f pod/run.sh ] || tar xzf /workspace/bundle_v2.tgz
 pkill -f "pod/ru[n].sh"; sleep 2
 log "full run start"
-BUDGET_H=$RUN_BUDGET_H R2_CUTOFF_H=$(python3 -c "print(round($RUN_BUDGET_H*0.6,2))") TAG=v2 bash pod/run.sh > /workspace/run.log 2>&1
+MAX_SEQS=${MAX_SEQS:-256} BUDGET_H=$RUN_BUDGET_H R2_CUTOFF_H=$(python3 -c "print(round($RUN_BUDGET_H*0.6,2))") TAG=v2 bash pod/run.sh > /workspace/run.log 2>&1
 log "full run exit $? $(cat data/v2/progress.json)"
 cp /workspace/pip_freeze.txt /workspace/nvidia_smi.txt results/v2/ 2>/dev/null; mv results_v2.tar.gz raw_v2.tar.gz snaps_v2.tar /workspace/ 2>/dev/null  # mv: snapshots are ~10 GB
 log "READY_TO_PULL $(ls -la /workspace/results_v2.tar.gz /workspace/raw_v2.tar.gz /workspace/snaps_v2.tar 2>/dev/null | awk '{print $5, $9}' | tr '\n' ' ')"

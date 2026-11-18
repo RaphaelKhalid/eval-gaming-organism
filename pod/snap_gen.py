@@ -37,7 +37,7 @@ from vllm.lora.request import LoRARequest
 from transformers import AutoTokenizer
 tok = AutoTokenizer.from_pretrained(M)
 llm = LLM(model=M, gpu_memory_utilization=GPU, max_model_len=8192, seed=0, enable_prefix_caching=True,
-          max_num_seqs=128, enable_lora=True, max_lora_rank=64)
+          max_num_seqs=int(os.environ.get("MAX_SEQS", "128")), enable_lora=True, max_lora_rank=64)
 prompts = [tok.apply_chat_template(r["messages"], tokenize=False, add_generation_prompt=True, enable_thinking=True)
            for r in rows]
 a = SimpleNamespace(n=1, temperature=0.6, top_p=0.95, top_k=20, think_budget=int(os.environ.get("THINK", "6144")), answer_tokens=640, seed=0)
